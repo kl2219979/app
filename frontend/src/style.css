@@ -1,0 +1,158 @@
+/* Estilos Personalizados - FinanzasFlow */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --font-primary: 'Plus Jakarta Sans', sans-serif;
+    color-scheme: dark;
+}
+
+body {
+    font-family: var(--font-primary);
+    background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.15), transparent 40%),
+                #0f172a;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
+                0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+/* Glowing Effects */
+.glow-primary {
+    position: relative;
+}
+.glow-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+.glow-primary:hover::after {
+    opacity: 1;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-dot {
+    0% { transform: scale(0.9); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(0.9); opacity: 1; }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pulse-active {
+    animation: pulse-dot 2s infinite ease-in-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glassmorphic Form Fields */
+.glass-input {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    transition: all 0.2s ease;
+}
+.glass-input:focus {
+    border-color: rgba(99, 102, 241, 0.8);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    outline: none;
+}
+
+/* Table Transitions */
+tr {
+    transition: background-color 0.2s ease;
+}
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Active Navigation Styles */
+.nav-link {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-link.active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+    color: #f8fafc;
+    border-left: 3px solid #6366f1;
+}
+
+/* Toast Notifications */
+#toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.toast {
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    padding: 16px 20px;
+    border-radius: 12px;
+    color: #f8fafc;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateY(100px);
+    opacity: 0;
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes slideIn {
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

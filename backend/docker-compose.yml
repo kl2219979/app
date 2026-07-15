@@ -1,0 +1,89 @@
+# =============================================================================
+# docker-compose.yml
+# =============================================================================
+# QUÉ ES:
+#   Receta de Docker Compose: define cómo se encienden los contenedores locales.
+#
+# POR QUÉ HAY DOS SERVICIOS:
+#   Queremos la base DESACOPLADA de la API.
+#   - `db`  = solo PostgreSQL (guarda datos, no tiene lógica de negocio).
+#   - `api` = FastAPI (lógica + Alembic crea/actualiza tablas).
+#
+# CÓMO USARLO:
+#   Solo la BD:     docker compose up db -d
+#   Todo el stack:  docker compose up --build
+#
+# FLUJO DE RED:
+#   Navegador/Frontend → localhost:8000 (api) → host interno "db":5432 (postgres)
+#   El frontend NUNCA se conecta directo a Postgres.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # db — PostgreSQL aislado
+  # ---------------------------------------------------------------------------
+  # QUÉ: motor de base de datos en un contenedor.
+  # POR QUÉ: misma versión para todo el equipo, sin instalar Postgres a mano.
+  # QUÉ NO HACE: no crea tablas de usuarios/productos. Eso lo hace Alembic.
+  db:
+    image: postgres:16-alpine
+    # alpine es una versión minimal de Linux que es más ligera y rápida que la versión completa de Linux.
+    container_name: app_backend_db
+    restart: unless-stopped
+    # unless-stopped: si el contenedor se detiene, se reinicia.
+
+
+    environment:
+      # Usuario, clave y nombre de la base (vienen del .env).
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-app_db}
+    ports:
+      # "5432 en tu PC" → "5432 dentro del contenedor".
+      # Así uvicorn en el host puede usar localhost:5432.
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Guarda los datos en disco. Si apagas el contenedor, los datos no se pierden.
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # Docker marca db como "healthy" cuando Postgres ya acepta conexiones.
+      # El servicio api espera ese estado para no arrancar demasiado pronto.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-app_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # api — Backend FastAPI (opcional si corres uvicorn en tu PC)
+  # ---------------------------------------------------------------------------
+  # QUÉ: construye la imagen del backend y la corre.
+  # POR QUÉ: útil para probar el stack completo sin instalar Python local.
+  # ANTES DE SERVIR HTTP: entrypoint.sh espera la BD y corre migraciones.
+  api:
+    build: .
+    container_name: app_backend_api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Dentro de la red Docker: host = nombre del servicio, puerto interno 5432.
+      # DATABASE_URL se arma sola en config.py desde estas piezas (no uses el
+      # POSTGRES_PORT del .env del host, que puede ser 5433).
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      # Necesario porque el volumen monta el código y scripts importan el paquete `app`.
+      PYTHONPATH: /app
+    ports:
+      - "${PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Monta tu código: si editas archivos, --reload reinicia la API.
+      - .:/app
+    entrypoint: ["/app/scripts/entrypoint.sh"]
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+volumes:
+  # Volumen nombrado de Docker para los archivos internos de PostgreSQL.
+  postgres_data:

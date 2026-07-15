@@ -1,0 +1,296 @@
+{
+  "info": {
+    "name": "App Backend — Frontend kit",
+    "description": "Flujos listos para el FE. Base URL local: http://localhost:8000/api/v1\n\nDemo users: demo001..demo100 / Password123!\nVer docs/FRONTEND.md",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000/api/v1" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "account_id", "value": "" },
+    { "key": "category_id", "value": "" },
+    { "key": "sub_category_id", "value": "" },
+    { "key": "contraparte_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Login (demo001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.access_token) pm.collectionVariables.set('access_token', j.access_token);",
+                  "  if (j.refresh_token) pm.collectionVariables.set('refresh_token', j.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "demo001" },
+                { "key": "password", "value": "Password123!" }
+              ]
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.access_token) pm.collectionVariables.set('access_token', j.access_token);",
+                  "  if (j.refresh_token) pm.collectionVariables.set('refresh_token', j.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/refresh"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Catalog & accounts",
+      "item": [
+        {
+          "name": "List categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const items = pm.response.json().items || [];",
+                  "  if (items.length) pm.collectionVariables.set('category_id', String(items[0].id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/categories?limit=50"
+          }
+        },
+        {
+          "name": "List subcategories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const items = pm.response.json().items || [];",
+                  "  if (items.length) pm.collectionVariables.set('sub_category_id', String(items[0].id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/subcategories?limit=50&category_id={{category_id}}"
+          }
+        },
+        {
+          "name": "List accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const items = pm.response.json().items || [];",
+                  "  const bank = items.find(a => a.tipo !== 'efectivo') || items[0];",
+                  "  if (bank) pm.collectionVariables.set('account_id', String(bank.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/accounts?limit=50"
+          }
+        },
+        {
+          "name": "List counterparties",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const items = pm.response.json().items || [];",
+                  "  if (items.length) pm.collectionVariables.set('contraparte_id', String(items[0].id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/counterparties?limit=50"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Transactions",
+      "item": [
+        {
+          "name": "List transactions (filters)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/transactions?limit=20&offset=0&medio_pago=cuenta&date_from=2026-01-01&date_to=2026-07-31"
+          }
+        },
+        {
+          "name": "List by contraparte",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/transactions?contraparte_id={{contraparte_id}}&limit=20"
+          }
+        },
+        {
+          "name": "List cash only",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/transactions?medio_pago=efectivo&limit=20"
+          }
+        },
+        {
+          "name": "Create gasto (cuenta + contraparte)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_id\": {{account_id}},\n  \"category_id\": {{category_id}},\n  \"sub_category_id\": {{sub_category_id}},\n  \"monto\": \"15000.00\",\n  \"tipo\": \"gasto\",\n  \"medio_pago\": \"cuenta\",\n  \"contraparte_id\": {{contraparte_id}},\n  \"fecha\": \"2026-07-13\",\n  \"descripcion\": \"Prueba FE\"\n}"
+            },
+            "url": "{{baseUrl}}/transactions"
+          }
+        },
+        {
+          "name": "Create gasto efectivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": {{category_id}},\n  \"sub_category_id\": {{sub_category_id}},\n  \"monto\": \"5000.00\",\n  \"tipo\": \"gasto\",\n  \"medio_pago\": \"efectivo\",\n  \"moneda\": \"COP\",\n  \"fecha\": \"2026-07-13\",\n  \"descripcion\": \"Taxi efectivo\"\n}"
+            },
+            "url": "{{baseUrl}}/transactions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Reports dashboard",
+      "item": [
+        {
+          "name": "Summary (all)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/reports/summary"
+          }
+        },
+        {
+          "name": "Summary (period)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/reports/summary?date_from=2026-07-01&date_to=2026-07-31"
+          }
+        },
+        {
+          "name": "Summary (one account)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{baseUrl}}/reports/summary?account_id={{account_id}}&date_from=2026-01-01&date_to=2026-07-31"
+          }
+        }
+      ]
+    }
+  ]
+}

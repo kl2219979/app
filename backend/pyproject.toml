@@ -1,0 +1,22 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Backend API - FastAPI + PostgreSQL"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "unit: isolated unit tests (services, repositories, core) — majority of the suite",
+    "integration: API TestClient or real Postgres — keep this layer small",
+    "postgres: requires real Postgres (RUN_INTEGRATION=1 + TEST_DATABASE_URL)",
+    "e2e: full live stack end-to-end — few critical paths only",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

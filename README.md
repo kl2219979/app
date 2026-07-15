@@ -55,7 +55,7 @@ docker compose up -d          # db + api en :8000 (y Postgres en :5433)
 Seed demo (recomendado):
 
 ```bash
-# Ver backend/docs/FRONTEND.md y scripts/data/demo_100_users.sql
+# Ver backend/docs/FRONTEND.md y backend/scripts/data/demo_100_users.sql
 ```
 
 Credenciales demo (usuarios normales, sin MFA):
@@ -132,7 +132,7 @@ Trabajando/
     └── README.md
 ```
 
-> Nota: `frontend/` puede ser un repositorio Git independiente (`finanzasflow-client`) aunque viva junto al backend en este workspace.
+> Monorepo: el código de `backend/` y `frontend/` vive en este mismo repositorio (`kl2219979/app`).
 
 ---
 
