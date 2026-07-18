@@ -6,6 +6,7 @@ import { CounterpartiesView } from '../views/CounterpartiesView.js';
 import { TransfersView } from '../views/TransfersView.js';
 import { CatalogView } from '../views/CatalogView.js';
 import { SettingsView } from '../views/SettingsView.js';
+import { LandingPageView } from '../views/LandingPageView.js';
 
 const routes = {
     dashboard: DashboardView,
@@ -16,6 +17,7 @@ const routes = {
     budgets: BudgetsView,
     catalog: CatalogView,
     settings: SettingsView,
+    landing: LandingPageView,
 };
 
 const headers = {
@@ -27,6 +29,7 @@ const headers = {
     budgets: ['Presupuestos', 'Límites mensuales y consumo del periodo.'],
     catalog: ['Catálogo', 'Categorías y subcategorías (admin + MFA).'],
     settings: ['Ajustes', 'Perfil, MFA y desactivación de cuenta.'],
+    landing: ['FinanzasFlow', 'Descubre el control total de tus finanzas.'],
 };
 
 export const Router = {
@@ -56,9 +59,39 @@ export const Router = {
             }
         }
         if (!routes[routeId]) return;
+
+        // Route Guard for private routes
+        if (routeId !== 'landing' && !this.state?.user) {
+            routeId = 'landing';
+        }
+
+        // Route Guard for public routes (e.g. landing)
+        if (routeId === 'landing' && this.state?.user) {
+            routeId = 'dashboard';
+        }
+
         this.activeRoute = routeId;
 
+        const sidebar = document.getElementById('app-sidebar');
+        const header = document.getElementById('app-header');
         const viewport = document.getElementById('router-viewport');
+
+        if (routeId === 'landing') {
+            sidebar?.classList.add('hidden');
+            sidebar?.classList.remove('flex');
+            header?.classList.add('hidden');
+            header?.classList.remove('flex');
+            viewport?.classList.remove('p-4', 'md:p-8');
+            viewport?.classList.add('p-0');
+        } else {
+            sidebar?.classList.remove('hidden');
+            sidebar?.classList.add('flex');
+            header?.classList.remove('hidden');
+            header?.classList.add('flex');
+            viewport?.classList.remove('p-0');
+            viewport?.classList.add('p-4', 'md:p-8');
+        }
+
         if (viewport) viewport.innerHTML = routes[routeId].render();
         routes[routeId].init(this.state, this.utils);
 

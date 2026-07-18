@@ -92,7 +92,7 @@ export const DashboardView = {
 
                 <div class="glass-card p-5 rounded-2xl">
                     <h5 class="text-sm font-semibold text-white mb-3">Subcategorías (gastos)</h5>
-                    <ul id="list-by-subcat" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs text-slate-400"></ul>
+                    <ul id="list-by-subcat" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3 text-xs text-slate-400"></ul>
                 </div>
 
                 <div class="glass-card rounded-2xl overflow-hidden">
@@ -297,7 +297,7 @@ export const DashboardView = {
         fill('list-by-counterparty', report.by_counterparty, (c) =>
             `<span>${utils.escapeHtml(c.nombre)}</span><span>G ${utils.formatCurrency(c.total_gastos)}</span>`);
         fill('list-by-subcat', report.by_subcategory_gastos, (s) =>
-            `<span>${utils.escapeHtml(s.category_nombre)} / ${utils.escapeHtml(s.nombre)}</span><span class="text-slate-300">${utils.formatCurrency(s.total)}</span>`);
+            `<span class="truncate mr-2" title="${utils.escapeHtml(s.category_nombre)} / ${utils.escapeHtml(s.nombre)}">${utils.escapeHtml(s.category_nombre)} / ${utils.escapeHtml(s.nombre)}</span><span class="text-slate-300 font-medium whitespace-nowrap">${utils.formatCurrency(s.total)}</span>`);
     },
 
     renderRecentTransactions(state, utils) {

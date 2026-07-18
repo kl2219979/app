@@ -109,6 +109,29 @@ function showMfaScreen(show) {
     document.getElementById('app-shell')?.classList.add('hidden');
 }
 
+function toggleMobileMenu(show) {
+    const sidebar = document.getElementById('app-sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+    if (show) {
+        sidebar?.classList.remove('-translate-x-full');
+        overlay?.classList.remove('hidden');
+    } else {
+        sidebar?.classList.add('-translate-x-full');
+        overlay?.classList.add('hidden');
+    }
+}
+
+function showAuthScreen(tab = 'login') {
+    document.getElementById('auth-screen')?.classList.remove('hidden');
+    document.getElementById('app-shell')?.classList.add('hidden');
+    switchAuthTab(tab);
+}
+
+function closeAuthScreen() {
+    document.getElementById('auth-screen')?.classList.add('hidden');
+    document.getElementById('app-shell')?.classList.remove('hidden');
+}
+
 function updateUserDisplay() {
     if (!state.user) return;
     const initialsEl = document.getElementById('user-initials');
@@ -231,9 +254,37 @@ function showToast(message, type = 'success') {
 
 // --- Auth ---
 function switchAuthTab(tab) {
-    const isLogin = tab === 'login';
-    document.getElementById('login-form')?.classList.toggle('hidden', !isLogin);
-    document.getElementById('register-form')?.classList.toggle('hidden', isLogin);
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const tabs = document.querySelectorAll('#auth-screen .flex button');
+    const pill = document.getElementById('auth-tab-pill');
+
+    if (tab === 'login') {
+        loginForm?.classList.remove('hidden');
+        registerForm?.classList.add('hidden');
+        if (pill) pill.style.transform = 'translateX(0)';
+        if (tabs.length >= 2) {
+            tabs[0].className = 'relative z-10 flex-1 py-2 text-sm font-semibold text-indigo-300 transition-colors duration-300';
+            tabs[1].className = 'relative z-10 flex-1 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200 transition-colors duration-300';
+        }
+    } else {
+        loginForm?.classList.add('hidden');
+        registerForm?.classList.remove('hidden');
+        if (pill) pill.style.transform = 'translateX(100%)';
+        if (tabs.length >= 2) {
+            tabs[0].className = 'relative z-10 flex-1 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200 transition-colors duration-300';
+            tabs[1].className = 'relative z-10 flex-1 py-2 text-sm font-semibold text-indigo-300 transition-colors duration-300';
+        }
+    }
+}
+
+function returnToLanding() {
+    if (state.user) {
+        Router.navigateTo('dashboard');
+    } else {
+        closeAuthScreen();
+        Router.navigateTo('landing');
+    }
 }
 
 async function handleLogin(event) {
@@ -304,7 +355,8 @@ async function handleLogout(showMessage = true) {
     try { await api.logout(); } catch { api.clearSession(); }
     state.user = null;
     state.pendingMfaToken = null;
-    showApp(false);
+    Router.navigateTo('landing');
+    showAuthScreen('login');
     if (showMessage) showToast('Sesión cerrada', 'info');
 }
 
@@ -972,7 +1024,7 @@ async function deactivateOwnAccount() {
 // --- Boot ---
 document.addEventListener('DOMContentLoaded', async () => {
     const bind = {
-        switchTab: (id) => Router.navigateTo(id),
+        switchTab: (id) => { toggleMobileMenu(false); Router.navigateTo(id); },
         switchAuthTab, handleLogin, handleRegister, handleLogout, handleMfaVerify, cancelMfa,
         openTransactionModal, closeTransactionModal, setFormType, setMedioPago, saveTransaction, deleteTransactionFlow,
         openBudgetModal, closeBudgetModal, saveBudget, deactivateBudgetFlow, reactivateBudgetFlow,
@@ -983,6 +1035,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         openCategoryModal, closeCategoryModal, saveCategory, deactivateCategoryFlow,
         openSubcategoryModal, closeSubcategoryModal, saveSubcategory, deactivateSubcategoryFlow,
         saveProfile, startMfaSetup, confirmMfaSetup, deactivateOwnAccount, loadAllData,
+        toggleMobileMenu, showAuthScreen, closeAuthScreen, returnToLanding
     };
     Object.assign(window, bind);
 
@@ -997,9 +1050,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         Router.init(state, utils);
         await loadAllData();
     } else {
-        showApp(false);
-        switchAuthTab('login');
-        lucide.createIcons();
+        showApp(true);
+        Router.init(state, utils);
+        Router.navigateTo('landing');
     }
 
     setInterval(runConnectionCheck, 5000);
