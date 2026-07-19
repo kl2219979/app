@@ -83,7 +83,7 @@ export const Router = {
             main?.classList.remove('md:ml-64');
             header?.classList.add('hidden');
             header?.classList.remove('flex');
-            viewport?.classList.remove('p-4', 'md:p-8');
+            viewport?.classList.remove('p-3', 'p-4', 'sm:p-4', 'md:p-8');
             viewport?.classList.add('p-0');
         } else {
             sidebar?.classList.remove('hidden');
@@ -92,7 +92,7 @@ export const Router = {
             header?.classList.remove('hidden');
             header?.classList.add('flex');
             viewport?.classList.remove('p-0');
-            viewport?.classList.add('p-4', 'md:p-8');
+            viewport?.classList.add('p-3', 'sm:p-4', 'md:p-8');
         }
 
         if (viewport) viewport.innerHTML = routes[routeId].render();
