@@ -2,9 +2,9 @@ export const TransfersView = {
     render() {
         return `
             <div class="space-y-6 animate-fade-in">
-                <div class="glass-card p-6 rounded-2xl max-w-xl">
+                <div class="glass-card w-full max-w-xl p-4 sm:p-6 rounded-2xl">
                     <h4 class="text-md font-semibold text-white mb-1">Transferencia entre cuentas</h4>
-                    <p class="text-xs text-slate-400 mb-6">Mueve dinero entre tus cuentas propias (misma moneda).</p>
+                    <p class="text-xs leading-relaxed text-slate-400 mb-6">Mueve dinero entre tus cuentas propias (misma moneda).</p>
                     <div id="transfer-hint" class="hidden mb-4 p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs">
                         Necesitas al menos 2 cuentas activas.
                     </div>

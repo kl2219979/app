@@ -1,13 +1,13 @@
 export const LandingPageView = {
     render() {
         return `
-            <div class="min-h-screen bg-[#0f172a] text-slate-100 flex flex-col relative w-full overflow-hidden">
-                <div class="absolute top-20 -left-48 w-96 h-96 rounded-full bg-violet-600/15 blur-3xl pointer-events-none"></div>
-                <div class="absolute top-40 -right-48 w-[30rem] h-[30rem] rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"></div>
+            <div class="min-h-screen min-h-dvh bg-[#0f172a] text-slate-100 flex flex-col relative w-full overflow-hidden">
+                <div class="hidden sm:block absolute top-20 -left-48 w-96 h-96 rounded-full bg-violet-600/15 blur-3xl pointer-events-none"></div>
+                <div class="hidden sm:block absolute top-40 -right-48 w-[30rem] h-[30rem] rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"></div>
 
-                <header class="px-5 md:px-10 py-3 flex items-center justify-between gap-6 z-30 sticky top-0 border-b border-slate-800/70 bg-slate-950/85 backdrop-blur-xl">
+                <header class="px-3 sm:px-5 md:px-10 py-3 flex items-center justify-between gap-2 sm:gap-6 z-30 sticky top-0 border-b border-slate-800/70 bg-slate-950/85 backdrop-blur-xl">
                     <a href="#inicio" class="shrink-0" aria-label="LuCash, ir al inicio">
-                        <img src="/logo.png" alt="LuCash" class="w-36 md:w-44 h-10 md:h-11 object-cover object-center">
+                        <img src="/logo.png" alt="LuCash" class="w-28 sm:w-36 md:w-44 h-9 sm:h-10 md:h-11 object-cover object-center">
                     </a>
 
                     <nav class="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-400" aria-label="Navegación principal">
@@ -17,18 +17,18 @@ export const LandingPageView = {
                         <a href="#seguridad" class="hover:text-white transition-colors">Seguridad</a>
                     </nav>
 
-                    <div id="landing-auth-nav" class="flex items-center gap-2 md:gap-3"></div>
+                    <div id="landing-auth-nav" class="flex shrink-0 items-center gap-1.5 sm:gap-2 md:gap-3"></div>
                 </header>
 
                 <main class="relative z-10">
-                    <section id="inicio" class="max-w-7xl mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-10 items-center">
+                    <section id="inicio" class="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 pt-10 sm:pt-16 md:pt-24 pb-12 sm:pb-20 grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-14 lg:gap-10 items-center">
                         <div class="animate-fade-in">
                             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-400/10 text-cyan-300 border border-cyan-300/20 text-xs font-semibold mb-7">
                                 <span class="w-2 h-2 rounded-full bg-cyan-300 pulse-active"></span>
                                 Tus finanzas, más simples y claras
                             </div>
 
-                            <h1 class="text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.05] text-white max-w-2xl">
+                            <h1 class="text-3xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.08] sm:leading-[1.05] text-white max-w-2xl">
                                 Toma el control de tu
                                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-violet-400"> dinero</span>
                                 sin complicarte.
@@ -40,29 +40,29 @@ export const LandingPageView = {
 
                             <ul class="mt-8 space-y-4 text-sm text-slate-300">
                                 <li class="flex items-center gap-3">
-                                    <span class="w-9 h-9 rounded-xl bg-cyan-400/10 text-cyan-300 flex items-center justify-center"><i data-lucide="landmark" class="w-4 h-4"></i></span>
+                                    <span class="shrink-0 w-9 h-9 rounded-xl bg-cyan-400/10 text-cyan-300 flex items-center justify-center"><i data-lucide="landmark" class="w-4 h-4"></i></span>
                                     Todas tus cuentas y saldos organizados
                                 </li>
                                 <li class="flex items-center gap-3">
-                                    <span class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-300 flex items-center justify-center"><i data-lucide="chart-no-axes-combined" class="w-4 h-4"></i></span>
+                                    <span class="shrink-0 w-9 h-9 rounded-xl bg-violet-500/10 text-violet-300 flex items-center justify-center"><i data-lucide="chart-no-axes-combined" class="w-4 h-4"></i></span>
                                     Reportes claros para tomar mejores decisiones
                                 </li>
                                 <li class="flex items-center gap-3">
-                                    <span class="w-9 h-9 rounded-xl bg-cyan-400/10 text-cyan-300 flex items-center justify-center"><i data-lucide="shield-check" class="w-4 h-4"></i></span>
+                                    <span class="shrink-0 w-9 h-9 rounded-xl bg-cyan-400/10 text-cyan-300 flex items-center justify-center"><i data-lucide="shield-check" class="w-4 h-4"></i></span>
                                     Información protegida y acceso seguro
                                 </li>
                             </ul>
 
                             <div id="landing-hero-cta" class="mt-9 flex flex-col sm:flex-row gap-3"></div>
 
-                            <div class="mt-10 grid grid-cols-3 gap-3 max-w-xl">
-                                <div class="min-w-0 text-center text-[10px] sm:text-xs font-semibold text-slate-300">Todo en un solo lugar</div>
-                                <div class="min-w-0 text-center text-[10px] sm:text-xs font-semibold text-slate-300">Información al instante</div>
-                                <div class="min-w-0 text-center text-[10px] sm:text-xs font-semibold text-slate-300">Decide con claridad</div>
+                            <div class="mt-10 grid grid-cols-3 gap-2 sm:gap-3 max-w-xl">
+                                <div class="min-w-0 text-center text-[9px] sm:text-xs font-semibold text-slate-300">Todo en un solo lugar</div>
+                                <div class="min-w-0 text-center text-[9px] sm:text-xs font-semibold text-slate-300">Información al instante</div>
+                                <div class="min-w-0 text-center text-[9px] sm:text-xs font-semibold text-slate-300">Decide con claridad</div>
                             </div>
                         </div>
 
-                        <div class="relative min-h-[430px] md:min-h-[520px] flex items-center justify-center animate-fade-in" style="animation-delay: 120ms;">
+                        <div class="relative min-h-[350px] sm:min-h-[430px] md:min-h-[520px] flex items-center justify-center animate-fade-in" style="animation-delay: 120ms;">
                             <div class="absolute inset-8 rounded-[2.5rem] bg-gradient-to-br from-cyan-400/15 to-violet-500/20 blur-2xl"></div>
 
                             <div class="relative w-full max-w-[620px] rounded-3xl border border-slate-700/70 bg-slate-900/95 p-3 md:p-4 shadow-2xl shadow-black/40">
@@ -71,15 +71,15 @@ export const LandingPageView = {
                                         <div class="flex gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-400/70"></span><span class="w-2.5 h-2.5 rounded-full bg-amber-300/70"></span><span class="w-2.5 h-2.5 rounded-full bg-emerald-400/70"></span></div>
                                         <span class="text-[10px] text-slate-500">Panel LuCash</span>
                                     </div>
-                                    <div class="p-4 md:p-6">
-                                        <div class="flex items-center justify-between mb-5">
+                                    <div class="p-3 sm:p-4 md:p-6">
+                                        <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
                                             <div><p class="text-[10px] text-slate-500 uppercase tracking-wider">Saldo neto</p><p class="text-xl md:text-2xl font-bold text-white mt-1">$ 8.420.000</p></div>
                                             <div class="px-2.5 py-1 rounded-full bg-emerald-400/10 text-emerald-300 text-[10px]">+12.4% este mes</div>
                                         </div>
                                         <div class="grid grid-cols-3 gap-2 md:gap-3 mb-5">
-                                            <div class="rounded-xl bg-slate-900 border border-slate-800 p-3"><span class="text-[9px] text-slate-500">Ingresos</span><p class="text-xs md:text-sm font-semibold text-cyan-300 mt-1">$ 4.8M</p></div>
-                                            <div class="rounded-xl bg-slate-900 border border-slate-800 p-3"><span class="text-[9px] text-slate-500">Gastos</span><p class="text-xs md:text-sm font-semibold text-violet-300 mt-1">$ 2.1M</p></div>
-                                            <div class="rounded-xl bg-slate-900 border border-slate-800 p-3"><span class="text-[9px] text-slate-500">Presupuesto</span><p class="text-xs md:text-sm font-semibold text-emerald-300 mt-1">68% gastado</p></div>
+                                            <div class="min-w-0 rounded-xl bg-slate-900 border border-slate-800 p-2 sm:p-3"><span class="text-[8px] sm:text-[9px] text-slate-500">Ingresos</span><p class="text-[10px] sm:text-xs md:text-sm font-semibold text-cyan-300 mt-1">$ 4.8M</p></div>
+                                            <div class="min-w-0 rounded-xl bg-slate-900 border border-slate-800 p-2 sm:p-3"><span class="text-[8px] sm:text-[9px] text-slate-500">Gastos</span><p class="text-[10px] sm:text-xs md:text-sm font-semibold text-violet-300 mt-1">$ 2.1M</p></div>
+                                            <div class="min-w-0 rounded-xl bg-slate-900 border border-slate-800 p-2 sm:p-3"><span class="text-[8px] sm:text-[9px] text-slate-500">Presupuesto</span><p class="text-[9px] sm:text-xs md:text-sm font-semibold text-emerald-300 mt-1">68% gastado</p></div>
                                         </div>
                                         <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
                                             <div class="flex justify-between items-center mb-5"><span class="text-[10px] text-slate-400">Flujo mensual</span><span class="text-[9px] text-slate-600">Últimos 6 meses</span></div>
@@ -93,7 +93,7 @@ export const LandingPageView = {
                                 </div>
                             </div>
 
-                            <div class="absolute -bottom-2 left-3 md:-left-5 w-44 md:w-52 rounded-[2rem] border-[6px] border-slate-800 bg-slate-950 p-3 shadow-2xl shadow-black/50">
+                            <div class="landing-phone-mockup absolute bottom-0 left-2 md:-bottom-2 md:-left-5 w-36 sm:w-44 md:w-52 rounded-[2rem] border-[5px] sm:border-[6px] border-slate-800 bg-slate-950 p-3 shadow-2xl shadow-black/50">
                                 <div class="w-16 h-1 rounded-full bg-slate-700 mx-auto mb-5"></div>
                                 <p class="text-[9px] text-slate-500">Disponible</p>
                                 <p class="text-lg font-bold text-white mt-1">$ 3.240.500</p>
@@ -105,7 +105,7 @@ export const LandingPageView = {
                         </div>
                     </section>
 
-                    <section id="funcionalidades" class="max-w-7xl mx-auto px-6 md:px-10 py-20 md:py-28">
+                    <section id="funcionalidades" class="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-14 sm:py-20 md:py-28">
                         <div class="text-center max-w-3xl mx-auto mb-14">
                             <span class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">Todo en un solo lugar</span>
                             <h2 class="mt-4 text-3xl md:text-5xl font-extrabold text-white">¿Qué puedes hacer con LuCash?</h2>
@@ -121,7 +121,7 @@ export const LandingPageView = {
                                 ['chart-column-big', 'Decide con datos reales', 'Analiza tendencias, categorías, medios de pago y comparaciones de periodo.', 'dashboard', 'cyan'],
                                 ['shield-check', 'Tu información siempre protegida', 'Accede con confianza y mantén tus datos financieros privados y bajo tu control.', 'settings', 'violet'],
                             ].map(([icon, title, copy, route, tone]) => `
-                                <button type="button" onclick="window.landingFeatureClick('${route}')" class="group text-left p-6 md:p-7 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-${tone}-400/40 hover:bg-slate-900 transition-all">
+                                <button type="button" onclick="window.landingFeatureClick('${route}')" class="group text-left p-5 sm:p-6 md:p-7 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-${tone}-400/40 hover:bg-slate-900 transition-all">
                                     <span class="w-12 h-12 rounded-xl bg-${tone}-400/10 text-${tone}-300 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform"><i data-lucide="${icon}" class="w-5 h-5"></i></span>
                                     <h3 class="text-lg font-bold text-white">${title}</h3>
                                     <p class="mt-3 text-sm text-slate-400 leading-relaxed">${copy}</p>
@@ -132,22 +132,22 @@ export const LandingPageView = {
                     </section>
 
                     <section id="como-funciona" class="border-y border-slate-800/70 bg-slate-950/50">
-                        <div class="max-w-7xl mx-auto px-6 md:px-10 py-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-14 sm:py-20 grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-14 items-center">
                             <div>
                                 <span class="text-xs font-semibold uppercase tracking-[0.25em] text-violet-300">Empieza sin complicaciones</span>
                                 <h2 class="mt-4 text-3xl md:text-4xl font-extrabold text-white">De tus movimientos a decisiones más inteligentes.</h2>
                                 <p class="mt-5 text-slate-400 leading-relaxed">LuCash convierte el registro diario de tus finanzas en una visión clara de tu situación económica.</p>
                             </div>
                             <ol class="space-y-5">
-                                <li class="flex gap-4 p-5 rounded-2xl bg-slate-900/70 border border-slate-800"><span class="shrink-0 w-9 h-9 rounded-full bg-cyan-400 text-slate-950 font-bold flex items-center justify-center">1</span><div><h3 class="font-semibold text-white">Crea y organiza tus cuentas</h3><p class="mt-1 text-sm text-slate-500">Agrega tus cuentas con moneda y saldo inicial.</p></div></li>
-                                <li class="flex gap-4 p-5 rounded-2xl bg-slate-900/70 border border-slate-800"><span class="shrink-0 w-9 h-9 rounded-full bg-violet-500 text-white font-bold flex items-center justify-center">2</span><div><h3 class="font-semibold text-white">Registra lo que entra y sale</h3><p class="mt-1 text-sm text-slate-500">Clasifica cada movimiento y asócialo a una cuenta.</p></div></li>
-                                <li class="flex gap-4 p-5 rounded-2xl bg-slate-900/70 border border-slate-800"><span class="shrink-0 w-9 h-9 rounded-full bg-cyan-400 text-slate-950 font-bold flex items-center justify-center">3</span><div><h3 class="font-semibold text-white">Revisa y ajusta</h3><p class="mt-1 text-sm text-slate-500">Usa reportes y presupuestos para mejorar tus decisiones.</p></div></li>
+                                <li class="flex gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-slate-900/70 border border-slate-800"><span class="shrink-0 w-9 h-9 rounded-full bg-cyan-400 text-slate-950 font-bold flex items-center justify-center">1</span><div><h3 class="font-semibold text-white">Crea y organiza tus cuentas</h3><p class="mt-1 text-sm text-slate-500">Agrega tus cuentas con moneda y saldo inicial.</p></div></li>
+                                <li class="flex gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-slate-900/70 border border-slate-800"><span class="shrink-0 w-9 h-9 rounded-full bg-violet-500 text-white font-bold flex items-center justify-center">2</span><div><h3 class="font-semibold text-white">Registra lo que entra y sale</h3><p class="mt-1 text-sm text-slate-500">Clasifica cada movimiento y asócialo a una cuenta.</p></div></li>
+                                <li class="flex gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-slate-900/70 border border-slate-800"><span class="shrink-0 w-9 h-9 rounded-full bg-cyan-400 text-slate-950 font-bold flex items-center justify-center">3</span><div><h3 class="font-semibold text-white">Revisa y ajusta</h3><p class="mt-1 text-sm text-slate-500">Usa reportes y presupuestos para mejorar tus decisiones.</p></div></li>
                             </ol>
                         </div>
                     </section>
 
-                    <section id="seguridad" class="max-w-5xl mx-auto px-6 py-20 md:py-28 text-center">
-                        <div class="rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/10 to-cyan-400/10 px-6 py-12 md:px-16 md:py-16">
+                    <section id="seguridad" class="max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20 md:py-28 text-center">
+                        <div class="rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/10 to-cyan-400/10 px-4 sm:px-6 py-10 sm:py-12 md:px-16 md:py-16">
                             <span class="mx-auto w-14 h-14 rounded-2xl bg-violet-500/15 text-violet-300 flex items-center justify-center"><i data-lucide="shield-check" class="w-7 h-7"></i></span>
                             <h2 class="mt-6 text-3xl md:text-4xl font-extrabold text-white">Tu información financiera merece protección.</h2>
                             <p class="mt-4 text-slate-400 max-w-2xl mx-auto">Tus datos permanecen privados y vinculados únicamente a tu cuenta, para que administres tu dinero con tranquilidad.</p>
@@ -189,8 +189,8 @@ export const LandingPageView = {
         } else {
             if (navContainer) {
                 navContainer.innerHTML = `
-                    <button type="button" onclick="window.showAuthScreen('login')" class="hidden sm:inline-flex px-4 py-2 rounded-xl border border-slate-700 text-slate-200 text-sm font-semibold hover:bg-slate-800 transition-colors">Iniciar sesión</button>
-                    <button type="button" onclick="window.showAuthScreen('register')" class="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 text-sm font-bold hover:bg-cyan-300 transition-colors">Registrarse</button>
+                    <button type="button" onclick="window.showAuthScreen('login')" class="inline-flex px-2.5 sm:px-4 py-2 rounded-xl border border-slate-700 text-slate-200 text-xs sm:text-sm font-semibold hover:bg-slate-800 transition-colors"><span class="sm:hidden">Entrar</span><span class="hidden sm:inline">Iniciar sesión</span></button>
+                    <button type="button" onclick="window.showAuthScreen('register')" class="px-2.5 sm:px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 text-xs sm:text-sm font-bold hover:bg-cyan-300 transition-colors"><span class="sm:hidden">Registro</span><span class="hidden sm:inline">Registrarse</span></button>
                 `;
             }
             if (ctaContainer) {

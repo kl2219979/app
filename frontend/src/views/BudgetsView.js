@@ -2,22 +2,22 @@ export const BudgetsView = {
     render() {
         return `
             <div class="space-y-6 animate-fade-in">
-                <div class="glass-card p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="glass-card p-4 sm:p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h4 class="text-md font-semibold text-white mb-1">Presupuestos mensuales</h4>
                         <p class="text-xs text-slate-400">Consumo del mes calendario actual.</p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                         <label class="flex items-center gap-2 text-xs text-slate-400">
                             <input type="checkbox" id="budgets-include-inactive" class="rounded border-slate-600">
                             Mostrar inactivos
                         </label>
-                        <button onclick="window.openBudgetModal()" class="flex items-center gap-2 px-4 py-2 border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 rounded-xl text-sm font-semibold">
+                        <button onclick="window.openBudgetModal()" class="flex items-center justify-center gap-2 px-4 py-2 border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 rounded-xl text-sm font-semibold">
                             <i data-lucide="sliders" class="w-4 h-4"></i> Ajustar límites
                         </button>
                     </div>
                 </div>
-                <div id="budgets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div id="budgets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"></div>
             </div>
         `;
     },
@@ -65,7 +65,7 @@ export const BudgetsView = {
         }
 
         if (!cards.length) {
-            grid.innerHTML = `<div class="glass-card p-10 rounded-2xl text-center text-slate-500 col-span-full">
+            grid.innerHTML = `<div class="glass-card p-8 sm:p-10 rounded-2xl text-center text-slate-500 col-span-full">
                 <p class="text-slate-400 font-semibold mb-1">Sin presupuestos</p>
                 <p class="text-xs">Crea un límite por categoría.</p>
             </div>`;
@@ -86,14 +86,14 @@ export const BudgetsView = {
             else if (percent > 80) bar = 'bg-amber-500';
 
             const card = document.createElement('div');
-            card.className = `glass-card p-6 rounded-2xl flex flex-col justify-between border ${isExceeded ? 'border-rose-500/30' : 'border-slate-800/80'} ${active ? '' : 'opacity-60'}`;
+            card.className = `glass-card p-4 sm:p-6 rounded-2xl flex flex-col justify-between border ${isExceeded ? 'border-rose-500/30' : 'border-slate-800/80'} ${active ? '' : 'opacity-60'}`;
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2.5 rounded-xl ${style.bg} ${style.text}"><i data-lucide="${style.icon}" class="w-5 h-5"></i></div>
-                            <div>
-                                <h4 class="font-bold text-white">${utils.escapeHtml(b.category_nombre)}</h4>
+                        <div class="flex min-w-0 items-center gap-3">
+                            <div class="shrink-0 p-2.5 rounded-xl ${style.bg} ${style.text}"><i data-lucide="${style.icon}" class="w-5 h-5"></i></div>
+                            <div class="min-w-0">
+                                <h4 class="truncate font-bold text-white">${utils.escapeHtml(b.category_nombre)}</h4>
                                 <span class="text-xs text-slate-400">Límite: ${utils.formatCurrency(limit, currency)}</span>
                             </div>
                         </div>
@@ -111,12 +111,12 @@ export const BudgetsView = {
                         <div class="text-[11px] text-slate-500">${Math.round(percent)}% · Restante ${utils.formatCurrency(b.restante, currency)}</div>
                     </div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-slate-800/50 flex justify-end gap-3">
+                <div class="mt-6 pt-4 border-t border-slate-800/50 grid grid-cols-2 gap-2">
                     ${active ? `
                         <button onclick="window.openBudgetModal(${b.category_id})" class="text-xs font-bold text-indigo-400">Ajustar</button>
                         <button onclick="window.deactivateBudgetFlow(${b.budget_id})" class="text-xs font-bold text-rose-400">Desactivar</button>
                     ` : `
-                        <button onclick="window.reactivateBudgetFlow(${b.budget_id})" class="text-xs font-bold text-emerald-400">Reactivar</button>
+                        <button onclick="window.reactivateBudgetFlow(${b.budget_id})" class="col-span-2 text-xs font-bold text-emerald-400">Reactivar</button>
                     `}
                 </div>
             `;

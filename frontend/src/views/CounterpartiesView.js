@@ -2,23 +2,23 @@ export const CounterpartiesView = {
     render() {
         return `
             <div class="space-y-6 animate-fade-in">
-                <div class="glass-card p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="glass-card p-4 sm:p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h4 class="text-md font-semibold text-white mb-1">Contrapartes</h4>
                         <p class="text-xs text-slate-400">Personas o entidades asociadas a tus movimientos.</p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                         <label class="flex items-center gap-2 text-xs text-slate-400">
                             <input type="checkbox" id="cp-include-inactive" class="rounded border-slate-600">
                             Mostrar inactivas
                         </label>
-                        <button onclick="window.openCounterpartyModal()" class="flex items-center gap-2 px-4 py-2 border border-indigo-500/30 hover:border-indigo-500 bg-indigo-500/10 text-indigo-400 rounded-xl text-sm font-semibold">
+                        <button onclick="window.openCounterpartyModal()" class="flex items-center justify-center gap-2 px-4 py-2 border border-indigo-500/30 hover:border-indigo-500 bg-indigo-500/10 text-indigo-400 rounded-xl text-sm font-semibold">
                             <i data-lucide="plus" class="w-4 h-4"></i> Nueva
                         </button>
                     </div>
                 </div>
                 <div class="glass-card rounded-2xl overflow-hidden">
-                    <table class="w-full text-left">
+                    <table class="desktop-table w-full text-left">
                         <thead>
                             <tr class="bg-slate-800/30 text-xs text-slate-400 uppercase tracking-wider">
                                 <th class="py-3 px-6">Nombre</th>
@@ -30,7 +30,8 @@ export const CounterpartiesView = {
                         </thead>
                         <tbody id="counterparties-tbody" class="divide-y divide-slate-800/40 text-sm"></tbody>
                     </table>
-                    <div id="cp-empty" class="p-10 text-center text-slate-500 hidden">Sin contrapartes registradas.</div>
+                    <div id="counterparties-cards" class="mobile-card-list p-3"></div>
+                    <div id="cp-empty" class="p-8 sm:p-10 text-center text-slate-500 hidden">Sin contrapartes registradas.</div>
                 </div>
             </div>
         `;
@@ -47,9 +48,11 @@ export const CounterpartiesView = {
 
     renderTable(state, utils) {
         const tbody = document.getElementById('counterparties-tbody');
+        const cards = document.getElementById('counterparties-cards');
         const empty = document.getElementById('cp-empty');
-        if (!tbody) return;
+        if (!tbody || !cards) return;
         tbody.innerHTML = '';
+        cards.innerHTML = '';
         const list = state.counterparties || [];
         if (!list.length) {
             if (empty) empty.classList.remove('hidden');
@@ -59,6 +62,12 @@ export const CounterpartiesView = {
 
         list.forEach((c) => {
             const active = c.activo !== false;
+            const actions = active ? `
+                <button onclick="window.openCounterpartyModal(${c.id})" class="inline-flex items-center justify-center gap-2 px-3 py-2 text-indigo-300 border border-indigo-500/20 bg-indigo-500/10 rounded-lg"><i data-lucide="pencil" class="w-4 h-4"></i><span class="text-xs font-semibold">Editar</span></button>
+                <button onclick="window.deactivateCounterpartyFlow(${c.id})" class="inline-flex items-center justify-center gap-2 px-3 py-2 text-rose-300 border border-rose-500/20 bg-rose-500/10 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i><span class="text-xs font-semibold">Desactivar</span></button>
+            ` : `
+                <button onclick="window.reactivateCounterpartyFlow(${c.id})" class="col-span-2 inline-flex items-center justify-center gap-2 px-3 py-2 text-emerald-300 border border-emerald-500/20 bg-emerald-500/10 rounded-lg"><i data-lucide="rotate-ccw" class="w-4 h-4"></i><span class="text-xs font-semibold">Reactivar</span></button>
+            `;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="py-3 px-6 font-medium text-white">${utils.escapeHtml(c.nombre)}</td>
@@ -81,6 +90,24 @@ export const CounterpartiesView = {
                 </td>
             `;
             tbody.appendChild(tr);
+
+            const card = document.createElement('article');
+            card.className = 'mobile-data-card';
+            card.innerHTML = `
+                <div class="flex min-w-0 items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h5 class="truncate text-sm font-semibold text-white">${utils.escapeHtml(c.nombre)}</h5>
+                        <p class="mt-1 truncate text-xs text-slate-400">${utils.escapeHtml(c.banco || 'Sin banco')}</p>
+                    </div>
+                    <span class="shrink-0 text-[10px] font-bold px-2 py-1 rounded-full ${active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">${active ? 'Activa' : 'Inactiva'}</span>
+                </div>
+                <div class="mt-4 text-xs">
+                    <p class="text-slate-500">Cuenta</p>
+                    <p class="mt-0.5 break-all text-slate-300">${utils.escapeHtml(c.numero_cuenta || '—')}</p>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-2">${actions}</div>
+            `;
+            cards.appendChild(card);
         });
         lucide.createIcons();
     },

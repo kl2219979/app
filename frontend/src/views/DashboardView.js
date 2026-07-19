@@ -34,7 +34,7 @@ function fmtRange(utils, from, to) {
 export const DashboardView = {
     render() {
         return `
-            <div class="dashboard-view space-y-7">
+            <div class="dashboard-view space-y-5 sm:space-y-7">
                 <div class="glass-card p-4 rounded-2xl grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                     <div class="space-y-1">
                         <label class="text-[10px] font-semibold text-slate-500 uppercase">Cuenta</label>
@@ -48,30 +48,30 @@ export const DashboardView = {
                         <label class="text-[10px] font-semibold text-slate-500 uppercase">Hasta</label>
                         <input type="date" id="report-date-to" class="glass-input w-full px-3 py-2 rounded-xl text-sm">
                     </div>
-                    <button id="btn-apply-report" class="px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 rounded-lg text-sm font-bold">Actualizar reporte</button>
+                    <button id="btn-apply-report" class="w-full px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 rounded-lg text-sm font-bold">Actualizar reporte</button>
                 </div>
 
-                <div class="dashboard-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
-                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Saldo neto</p><h3 id="stat-balance" class="text-2xl font-bold text-white">$0</h3></div>
-                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Ingresos</p><h3 id="stat-income" class="text-2xl font-bold text-emerald-400">$0</h3></div>
-                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Gastos</p><h3 id="stat-expense" class="text-2xl font-bold text-rose-400">$0</h3></div>
-                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Transferencias</p><h3 id="stat-transfers" class="text-2xl font-bold text-violet-300">$0</h3></div>
-                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Presupuesto</p><h3 id="stat-budget-percent" class="text-2xl font-bold text-slate-200">0%</h3><div class="mt-2 w-full bg-slate-800 rounded-full h-1.5"><div id="stat-budget-bar" class="bg-cyan-400 h-1.5 rounded-full" style="width:0%"></div></div></div>
+                <div class="dashboard-stats grid grid-cols-2 lg:grid-cols-5">
+                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Saldo neto</p><h3 id="stat-balance" class="break-words text-xl sm:text-2xl font-bold text-white">$0</h3></div>
+                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Ingresos</p><h3 id="stat-income" class="break-words text-xl sm:text-2xl font-bold text-emerald-400">$0</h3></div>
+                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Gastos</p><h3 id="stat-expense" class="break-words text-xl sm:text-2xl font-bold text-rose-400">$0</h3></div>
+                    <div class="dashboard-stat"><p class="text-xs text-slate-400 mb-2">Transferencias</p><h3 id="stat-transfers" class="break-words text-xl sm:text-2xl font-bold text-violet-300">$0</h3></div>
+                    <div class="dashboard-stat col-span-2 lg:col-span-1"><p class="text-xs text-slate-400 mb-2">Presupuesto</p><h3 id="stat-budget-percent" class="text-xl sm:text-2xl font-bold text-slate-200">0%</h3><div class="mt-2 w-full bg-slate-800 rounded-full h-1.5"><div id="stat-budget-bar" class="bg-cyan-400 h-1.5 rounded-full" style="width:0%"></div></div></div>
                 </div>
 
-                <div id="period-comparison" class="glass-card p-6 rounded-2xl hidden overflow-hidden relative"></div>
+                <div id="period-comparison" class="glass-card p-4 sm:p-6 rounded-2xl hidden overflow-hidden relative"></div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div class="glass-card p-6 rounded-2xl lg:col-span-2">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+                    <div class="glass-card p-4 sm:p-6 rounded-2xl lg:col-span-2">
                         <h4 class="text-md font-semibold text-white mb-1">Gastos por categoría</h4>
-                        <div class="h-64 relative flex items-center justify-center">
+                        <div class="h-56 sm:h-64 relative flex items-center justify-center">
                             <canvas id="categoryChart"></canvas>
                             <div id="no-chart-data" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500 hidden">Sin datos</div>
                         </div>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl lg:col-span-3">
+                    <div class="glass-card p-4 sm:p-6 rounded-2xl lg:col-span-3">
                         <h4 class="text-md font-semibold text-white mb-1">Flujo mensual</h4>
-                        <div class="h-64 relative"><canvas id="trendChart"></canvas></div>
+                        <div class="h-56 sm:h-64 relative"><canvas id="trendChart"></canvas></div>
                     </div>
                 </div>
 
@@ -96,14 +96,14 @@ export const DashboardView = {
                 </div>
 
                 <div class="glass-card rounded-2xl overflow-hidden">
-                    <div class="p-6 border-b border-slate-800/50 flex justify-between items-center">
-                        <div>
+                    <div class="p-4 sm:p-6 border-b border-slate-800/50 flex flex-wrap justify-between items-center gap-3">
+                        <div class="min-w-0">
                             <h4 class="text-md font-semibold text-white">Transacciones recientes</h4>
                             <p class="text-xs text-slate-400">Últimos movimientos activos.</p>
                         </div>
                         <button onclick="window.switchTab('transactions')" class="text-xs font-semibold text-indigo-400">Ver todas</button>
                     </div>
-                    <table class="w-full text-left text-sm">
+                    <table class="desktop-table w-full text-left text-sm">
                         <thead>
                             <tr class="bg-slate-800/30 text-xs text-slate-400 uppercase">
                                 <th class="py-3 px-6">Detalle</th>
@@ -114,6 +114,7 @@ export const DashboardView = {
                         </thead>
                         <tbody id="recent-transactions-tbody"></tbody>
                     </table>
+                    <div id="recent-transactions-cards" class="mobile-card-list p-3"></div>
                 </div>
             </div>
         `;
@@ -166,7 +167,7 @@ export const DashboardView = {
             el.textContent = utils.formatCurrency(val);
             if (cls) el.className = cls;
         };
-        set('stat-balance', net, net < 0 ? 'text-2xl font-bold text-rose-400' : 'text-2xl font-bold text-white');
+        set('stat-balance', net, net < 0 ? 'break-words text-xl sm:text-2xl font-bold text-rose-400' : 'break-words text-xl sm:text-2xl font-bold text-white');
         set('stat-income', totalIncome);
         set('stat-expense', totalExpense);
         set('stat-transfers', transfers);
@@ -301,13 +302,16 @@ export const DashboardView = {
 
     renderRecentTransactions(state, utils) {
         const tbody = document.getElementById('recent-transactions-tbody');
-        if (!tbody) return;
+        const cards = document.getElementById('recent-transactions-cards');
+        if (!tbody || !cards) return;
         tbody.innerHTML = '';
+        cards.innerHTML = '';
         const recent = [...(state.recentTransactions || [])]
             .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || (b.id - a.id))
             .slice(0, 5);
         if (!recent.length) {
             tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-slate-500">Sin movimientos</td></tr>';
+            cards.innerHTML = '<div class="py-6 text-center text-sm text-slate-500">Sin movimientos</div>';
             return;
         }
         recent.forEach((t) => {
@@ -327,6 +331,22 @@ export const DashboardView = {
                 <td class="py-3 px-6 text-right ${isIncome ? 'text-emerald-400' : 'text-slate-300'} font-semibold">${isIncome ? '+' : '-'}${utils.formatCurrency(t.monto)}</td>
             `;
             tbody.appendChild(tr);
+
+            const card = document.createElement('article');
+            card.className = 'mobile-data-card';
+            card.innerHTML = `
+                <div class="flex min-w-0 items-start justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-2">
+                        <div class="shrink-0 p-1.5 rounded-lg ${style.bg} ${style.text}"><i data-lucide="${style.icon}" class="w-3.5 h-3.5"></i></div>
+                        <div class="min-w-0">
+                            <h5 class="truncate text-sm font-semibold text-white">${utils.escapeHtml(t.descripcion || cat)}</h5>
+                            <p class="mt-1 truncate text-xs text-slate-500">${utils.escapeHtml(cat)} · ${utils.formatDate(t.fecha)}</p>
+                        </div>
+                    </div>
+                    <span class="shrink-0 text-sm ${isIncome ? 'text-emerald-400' : 'text-slate-300'} font-semibold">${isIncome ? '+' : '-'}${utils.formatCurrency(t.monto)}</span>
+                </div>
+            `;
+            cards.appendChild(card);
         });
         lucide.createIcons();
     },
@@ -364,7 +384,10 @@ export const DashboardView = {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 11 } } },
+                        legend: {
+                            position: window.matchMedia('(max-width: 639px)').matches ? 'bottom' : 'right',
+                            labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 },
+                        },
                     },
                     cutout: '70%',
                 },

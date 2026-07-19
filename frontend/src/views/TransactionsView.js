@@ -2,10 +2,10 @@ export const TransactionsView = {
     render() {
         return `
             <div class="space-y-6 animate-fade-in">
-                <div class="glass-card p-6 rounded-2xl space-y-4">
+                <div class="glass-card p-4 sm:p-6 rounded-2xl space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <h4 class="text-sm font-semibold text-white">Filtros (servidor)</h4>
-                        <div class="flex gap-2">
+                        <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
                             <button type="button" onclick="window.exportTransactionsFlow('csv')" class="text-xs px-3 py-1.5 border border-slate-700 rounded-lg text-slate-300 hover:text-white">Export CSV</button>
                             <button type="button" onclick="window.exportTransactionsFlow('json')" class="text-xs px-3 py-1.5 border border-slate-700 rounded-lg text-slate-300 hover:text-white">Export JSON</button>
                         </div>
@@ -54,14 +54,14 @@ export const TransactionsView = {
                             <input type="text" id="filter-search" placeholder="Concepto..." class="glass-input w-full px-3 py-2 rounded-xl text-sm">
                         </div>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="grid grid-cols-2 gap-2 sm:flex">
                         <button id="btn-apply-filters" class="px-4 py-2 bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 rounded-xl text-sm font-semibold">Aplicar</button>
                         <button id="btn-reset-filters" class="px-4 py-2 border border-slate-700 text-slate-300 rounded-xl text-sm">Limpiar</button>
                     </div>
                 </div>
 
                 <div class="glass-card rounded-2xl overflow-hidden">
-                    <div class="overflow-x-auto">
+                    <div class="desktop-table overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-800/30 text-xs text-slate-400 uppercase tracking-wider">
@@ -76,7 +76,8 @@ export const TransactionsView = {
                             <tbody id="all-transactions-tbody" class="divide-y divide-slate-800/40 text-sm"></tbody>
                         </table>
                     </div>
-                    <div id="no-transactions-alert" class="p-12 text-center text-slate-500 hidden">
+                    <div id="all-transactions-cards" class="mobile-card-list p-3"></div>
+                    <div id="no-transactions-alert" class="p-8 sm:p-12 text-center text-slate-500 hidden">
                         <h5 class="text-slate-400 font-semibold mb-1">Sin registros</h5>
                         <p class="text-xs">Ajusta filtros o crea una transacción.</p>
                     </div>
@@ -159,9 +160,11 @@ export const TransactionsView = {
 
     renderTable(state, utils) {
         const tbody = document.getElementById('all-transactions-tbody');
+        const cards = document.getElementById('all-transactions-cards');
         const alertEl = document.getElementById('no-transactions-alert');
-        if (!tbody) return;
+        if (!tbody || !cards) return;
         tbody.innerHTML = '';
+        cards.innerHTML = '';
 
         const search = (document.getElementById('filter-search')?.value || '').toLowerCase().trim();
         let rows = [...(state.transactions || [])];
@@ -186,6 +189,11 @@ export const TransactionsView = {
             const isTransfer = String(t.tipo || '').startsWith('transferencia');
             const amountClass = isIncome ? 'text-emerald-400 font-bold text-right' : 'text-slate-200 font-bold text-right';
             const amountFormatted = `${isIncome ? '+' : '-'}${utils.formatCurrency(t.monto)}`;
+            const transactionId = utils.escapeHtml(String(t.id));
+            const editAction = !isTransfer
+                ? `<button onclick="window.openTransactionModal('${transactionId}')" class="inline-flex items-center justify-center gap-2 px-3 py-2 text-indigo-300 border border-indigo-500/20 bg-indigo-500/10 rounded-lg"><i data-lucide="pencil" class="w-4 h-4"></i><span class="text-xs font-semibold">Editar</span></button>`
+                : '';
+            const deleteAction = `<button onclick="window.deleteTransactionFlow('${transactionId}')" class="inline-flex items-center justify-center gap-2 px-3 py-2 text-rose-300 border border-rose-500/20 bg-rose-500/10 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i><span class="text-xs font-semibold">Eliminar</span></button>`;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="py-4 px-6 font-semibold text-white max-w-sm truncate">
@@ -203,12 +211,37 @@ export const TransactionsView = {
                 <td class="py-4 px-6 ${amountClass}">${amountFormatted}</td>
                 <td class="py-4 px-6">
                     <div class="flex justify-center gap-2">
-                        ${!isTransfer ? `<button onclick="window.openTransactionModal('${t.id}')" class="p-2 text-indigo-400 hover:bg-slate-800 rounded-lg"><i data-lucide="pencil" class="w-4 h-4"></i></button>` : ''}
-                        <button onclick="window.deleteTransactionFlow('${t.id}')" class="p-2 text-rose-400 hover:bg-slate-800 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        ${!isTransfer ? `<button onclick="window.openTransactionModal('${transactionId}')" class="p-2 text-indigo-400 hover:bg-slate-800 rounded-lg" aria-label="Editar transacción"><i data-lucide="pencil" class="w-4 h-4"></i></button>` : ''}
+                        <button onclick="window.deleteTransactionFlow('${transactionId}')" class="p-2 text-rose-400 hover:bg-slate-800 rounded-lg" aria-label="Eliminar transacción"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </td>
             `;
             tbody.appendChild(tr);
+
+            const card = document.createElement('article');
+            card.className = 'mobile-data-card';
+            card.innerHTML = `
+                <div class="flex min-w-0 items-start justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div class="shrink-0 p-2 rounded-lg ${style.bg} ${style.text}"><i data-lucide="${style.icon}" class="w-4 h-4"></i></div>
+                        <div class="min-w-0">
+                            <h5 class="truncate text-sm font-semibold text-white">${utils.escapeHtml(t.descripcion || catName)}</h5>
+                            <p class="mt-0.5 text-xs text-slate-400">${utils.escapeHtml(catName)}</p>
+                        </div>
+                    </div>
+                    <span class="shrink-0 ${amountClass}">${amountFormatted}</span>
+                </div>
+                <dl class="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                    <div class="min-w-0"><dt class="text-slate-500">Tipo</dt><dd class="truncate text-slate-300">${utils.escapeHtml(t.tipo)}</dd></div>
+                    <div class="text-right"><dt class="text-slate-500">Fecha</dt><dd class="text-slate-300">${utils.formatDate(t.fecha)}</dd></div>
+                </dl>
+                ${t.grupo_transferencia ? `<p class="mt-3 truncate text-[10px] text-slate-500">Grupo ${utils.escapeHtml(String(t.grupo_transferencia).slice(0, 8))}…</p>` : ''}
+                <div class="mt-4 grid ${isTransfer ? 'grid-cols-1' : 'grid-cols-2'} gap-2">
+                    ${editAction}
+                    ${deleteAction}
+                </div>
+            `;
+            cards.appendChild(card);
         });
         lucide.createIcons();
     },
