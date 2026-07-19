@@ -261,6 +261,68 @@ function showToast(message, type = 'success') {
     }, 3500);
 }
 
+async function confirmDanger({ title, text = '', confirmText = 'Sí, continuar' }) {
+    const swal = window.Swal;
+    if (swal?.fire) {
+        const result = await swal.fire({
+            title,
+            text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: confirmText,
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            focusCancel: true,
+            background: '#0f172a',
+            color: '#e2e8f0',
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#334155',
+        });
+        return result.isConfirmed;
+    }
+
+    return new Promise((resolve) => {
+        const modal = document.getElementById('modal-confirm');
+        const content = document.getElementById('modal-confirm-content');
+        const titleEl = document.getElementById('confirm-title');
+        const textEl = document.getElementById('confirm-text');
+        const okBtn = document.getElementById('confirm-ok');
+        const cancelBtn = document.getElementById('confirm-cancel');
+        if (!modal || !content || !titleEl || !textEl || !okBtn || !cancelBtn) {
+            resolve(window.confirm([title, text].filter(Boolean).join('\n')));
+            return;
+        }
+
+        titleEl.textContent = title;
+        textEl.textContent = text;
+        textEl.classList.toggle('hidden', !text);
+        okBtn.textContent = confirmText;
+
+        const finish = (value) => {
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            modal.removeEventListener('click', onBackdrop);
+            document.removeEventListener('keydown', onKey);
+            closeModal('modal-confirm', 'modal-confirm-content');
+            resolve(value);
+        };
+        const onOk = () => finish(true);
+        const onCancel = () => finish(false);
+        const onBackdrop = (event) => {
+            if (event.target === modal) finish(false);
+        };
+        const onKey = (event) => {
+            if (event.key === 'Escape') finish(false);
+        };
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        modal.addEventListener('click', onBackdrop);
+        document.addEventListener('keydown', onKey);
+        openModal('modal-confirm', 'modal-confirm-content');
+    });
+}
+
 async function withSubmitLock(event, pendingLabel, operation) {
     const form = event.currentTarget;
     if (!form || form.dataset.submitting === 'true') return;
@@ -630,10 +692,16 @@ async function saveTransaction(event) {
 }
 
 async function deleteTransactionFlow(id) {
-    if (!confirm('¿Desactivar esta transacción?')) return;
+    const ok = await confirmDanger({
+        title: '¿Eliminar transacción?',
+        text: 'Esta acción quitará el movimiento de tus registros activos.',
+        confirmText: 'Sí, eliminar',
+    });
+    if (!ok) return;
+
     try {
         await api.deleteTransaction(id);
-        showToast('Transacción desactivada', 'info');
+        showToast('Transacción eliminada');
         await loadAllData();
     } catch (err) {
         showToast(err.message, 'error');
@@ -690,7 +758,12 @@ async function saveBudget(event) {
 }
 
 async function deactivateBudgetFlow(id) {
-    if (!confirm('¿Desactivar este presupuesto?')) return;
+    const ok = await confirmDanger({
+        title: '¿Desactivar este presupuesto?',
+        text: 'El límite dejará de aplicarse hasta que lo reactives.',
+        confirmText: 'Sí, desactivar',
+    });
+    if (!ok) return;
     try {
         await api.deactivateBudget(id);
         showToast('Presupuesto desactivado', 'info');
@@ -768,7 +841,13 @@ async function saveAccount(event) {
 }
 
 async function deactivateAccountFlow(id) {
-    if (!confirm('¿Desactivar esta cuenta?')) return;
+    const ok = await confirmDanger({
+        title: '¿Desactivar esta cuenta?',
+        text: 'La cuenta dejará de estar disponible para nuevos movimientos.',
+        confirmText: 'Sí, desactivar',
+    });
+    if (!ok) return;
+
     try {
         await api.deactivateAccount(id);
         showToast('Cuenta desactivada', 'info');
@@ -832,7 +911,12 @@ async function saveCounterparty(event) {
 }
 
 async function deactivateCounterpartyFlow(id) {
-    if (!confirm('¿Desactivar contraparte?')) return;
+    const ok = await confirmDanger({
+        title: '¿Desactivar contraparte?',
+        text: 'Dejará de aparecer en los nuevos movimientos.',
+        confirmText: 'Sí, desactivar',
+    });
+    if (!ok) return;
     try {
         await api.deactivateCounterparty(id);
         showToast('Contraparte desactivada', 'info');
@@ -928,7 +1012,12 @@ async function saveCategory(event) {
 }
 
 async function deactivateCategoryFlow(id) {
-    if (!confirm('¿Desactivar categoría y sus subcategorías?')) return;
+    const ok = await confirmDanger({
+        title: '¿Desactivar categoría?',
+        text: 'También se desactivarán sus subcategorías.',
+        confirmText: 'Sí, desactivar',
+    });
+    if (!ok) return;
     try {
         await api.deactivateCategory(id);
         showToast('Categoría desactivada', 'info');
@@ -987,7 +1076,12 @@ async function saveSubcategory(event) {
 }
 
 async function deactivateSubcategoryFlow(id) {
-    if (!confirm('¿Desactivar subcategoría?')) return;
+    const ok = await confirmDanger({
+        title: '¿Desactivar subcategoría?',
+        text: 'Dejará de estar disponible para nuevos movimientos.',
+        confirmText: 'Sí, desactivar',
+    });
+    if (!ok) return;
     try {
         await api.deactivateSubcategory(id);
         showToast('Subcategoría desactivada', 'info');
@@ -1047,7 +1141,12 @@ async function confirmMfaSetup() {
 
 async function deactivateOwnAccount() {
     if (!state.user) return;
-    if (!confirm('¿Desactivar tu cuenta de acceso? Deberás cerrar sesión.')) return;
+    const ok = await confirmDanger({
+        title: '¿Desactivar tu cuenta de acceso?',
+        text: 'Deberás cerrar sesión y no podrás entrar hasta reactivarla.',
+        confirmText: 'Sí, desactivar',
+    });
+    if (!ok) return;
     try {
         await api.deactivateUser(state.user.id);
         await handleLogout(false);
