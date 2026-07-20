@@ -1,4 +1,4 @@
-# FinanzasFlow
+# LucCash
 
 Aplicación de **finanzas personales**: cuentas, movimientos, transferencias, presupuestos, catálogo de categorías y reportes.
 
