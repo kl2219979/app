@@ -1,160 +1,160 @@
-# Guía frontend (primer día)
+# Frontend guide (first day)
 
-Contrato HTTP para integrar la app sin adivinar.  
-Complementa [API.md](API.md) y [NEGOCIO.md](NEGOCIO.md).
+HTTP contract to integrate the app without guessing.  
+Complements [API.md](API.md) and [BUSINESS.md](BUSINESS.md).
 
 ---
 
-## 1. Arranque local (backend)
+## 1. Local startup (backend)
 
 ```bash
 docker compose up db -d
 ./scripts/migrate.sh
-psql "$DATABASE_URL" -f scripts/data/demo_100_users.sql   # opcional pero recomendado
+psql "$DATABASE_URL" -f scripts/data/demo_100_users.sql   # optional but recommended
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 - API: `http://localhost:8000`
-- Prefijo: `/api/v1`
-- OpenAPI/Swagger: `http://localhost:8000/docs` (si `DEBUG=true`)
-- Spec cruda: `http://localhost:8000/openapi.json`
-- Colección Postman: [`postman/App_Backend_Frontend.postman_collection.json`](postman/App_Backend_Frontend.postman_collection.json)
+- Prefix: `/api/v1`
+- OpenAPI/Swagger: `http://localhost:8000/docs` (if `DEBUG=true`)
+- Raw spec: `http://localhost:8000/openapi.json`
+- Postman collection: [`postman/App_Backend_Frontend.postman_collection.json`](postman/App_Backend_Frontend.postman_collection.json)
 
-CORS por defecto: `http://localhost:5173` (Vite). Ajusta `CORS_ORIGINS` en `.env`.
+Default CORS: `http://localhost:5173` (Vite). Adjust `CORS_ORIGINS` in `.env`.
 
 ---
 
-## 2. Usuarios demo
+## 2. Demo users
 
-| Campo | Valor |
+| Field | Value |
 |-------|--------|
-| Usuario | `demo001` … `demo100` |
-| Correo | `demo001@example.com` … |
+| Username | `demo001` … `demo100` |
+| Email | `demo001@example.com` … |
 | Password | `Password123!` |
 
-Cada demo trae cuentas (a menudo + wallet Efectivo), contrapartes y movimientos 2026.
+Each demo comes with accounts (often + a Cash wallet), counterparties, and 2026 transactions.
 
 ---
 
-## 3. Auth (mínimo viable)
+## 3. Auth (minimum viable)
 
 1. `POST /api/v1/auth/login`  
    Body **form-urlencoded** (OAuth2): `username`, `password`  
-2. Guardar `access_token` + `refresh_token`.  
-3. Todas las rutas privadas: `Authorization: Bearer <access_token>`.  
-4. Si `401`: `POST /api/v1/auth/refresh` con `{ "refresh_token": "..." }` y reemplaza ambos tokens.  
-5. `GET /api/v1/auth/me` → perfil.
+2. Save `access_token` + `refresh_token`.  
+3. All private routes: `Authorization: Bearer <access_token>`.  
+4. On `401`: `POST /api/v1/auth/refresh` with `{ "refresh_token": "..." }` and replace both tokens.  
+5. `GET /api/v1/auth/me` → profile.
 
-Si el login responde `mfa_required` (admins): flujo TOTP en [SEGURIDAD.md](SEGURIDAD.md). Los `demo*` son usuarios normales sin MFA.
+If login responds `mfa_required` (admins): TOTP flow in [SECURITY.md](SECURITY.md). The `demo*` users are regular users without MFA.
 
-**Rate limit:** ~10 intentos de login / 60s → `429`. No spamear logins en loops.
+**Rate limit:** ~10 login attempts / 60s → `429`. Don't spam logins in loops.
 
 ---
 
-## 4. Flujo happy path (pantallas)
+## 4. Happy path flow (screens)
 
 ```
 Login → Me
      → GET /categories + /subcategories
      → GET /accounts
      → GET /counterparties
-     → GET /budgets + /budgets/status   ← metas del mes
+     → GET /budgets + /budgets/status   ← month's goals
      → GET /reports/summary            ← Home / dashboard
-     → GET /transactions?…             ← Feed / extracto
-     → GET /transactions/export?format=csv  ← descarga
+     → GET /transactions?…             ← Feed / statement
+     → GET /transactions/export?format=csv  ← download
 ```
 
 ### Dashboard — `GET /reports/summary`
 
-Query opcionales: `date_from`, `date_to`, `account_id`.
+Optional query: `date_from`, `date_to`, `account_id`.
 
-Campos útiles para UI:
+Useful fields for the UI:
 
-| Bloque UI | Campos JSON |
+| UI block | JSON fields |
 |-----------|-------------|
 | KPI cards | `total_ingresos`, `total_gastos`, `balance_neto`, `total_transferencias` |
-| Donut / barras categorías | `by_category_gastos`, `by_category_ingresos` |
-| Detalle fino | `by_subcategory_gastos`, `by_subcategory_ingresos` |
-| Efectivo vs cuenta | `by_medio_pago[]` (`medio_pago`, totales, `count`) |
-| Top terceros | `by_counterparty[]` (máx. 10) |
-| Serie temporal | `by_month[]` |
-| Bolsillos | `by_account[]` (`saldo` actual + totales del periodo) |
-| “Vs periodo anterior” | `period_comparison` |
-| Presupuestos del mes | `budgets_status[]` |
+| Category donut / bars | `by_category_gastos`, `by_category_ingresos` |
+| Fine detail | `by_subcategory_gastos`, `by_subcategory_ingresos` |
+| Cash vs account | `by_medio_pago[]` (`medio_pago`, totals, `count`) |
+| Top third parties | `by_counterparty[]` (max 10) |
+| Time series | `by_month[]` |
+| Pockets | `by_account[]` (current `saldo` + period totals) |
+| “Vs previous period” | `period_comparison` |
+| Month's budgets | `budgets_status[]` |
 
 `period_comparison`:
 
-- Si mandas `date_from` + `date_to` → compara ese rango con el de **igual duración** justo antes.
-- Si no mandas fechas → mes calendario actual (`día 1` → hoy) vs mes calendario anterior.
-- `*_change_pct` puede ser `null` si el periodo anterior fue 0.
+- If you send `date_from` + `date_to` → compares that range with the one of **equal duration** just before.
+- If you don't send dates → current calendar month (`day 1` → today) vs previous calendar month.
+- `*_change_pct` can be `null` if the previous period was 0.
 
-Las **transferencias no van dentro de gastos/ingresos**. Muéstralas aparte.
+**Transfers do not go inside expenses/income**. Show them separately.
 
 ### Feed — `GET /transactions`
 
-Orden **estable**: `fecha DESC`, luego `id DESC` (más reciente primero).
+**Stable** order: `fecha DESC`, then `id DESC` (most recent first).
 
-Filtros:
+Filters:
 
-| Query | Ejemplo |
+| Query | Example |
 |-------|---------|
-| `limit` / `offset` | paginación (`items`, `total`, `limit`, `offset`) |
-| `account_id` | una cuenta |
-| `category_id` / `sub_category_id` | catálogo |
-| `contraparte_id` | “movimientos con X” |
+| `limit` / `offset` | pagination (`items`, `total`, `limit`, `offset`) |
+| `account_id` | one account |
+| `category_id` / `sub_category_id` | catalog |
+| `contraparte_id` | “transactions with X” |
 | `medio_pago` | `cuenta` \| `efectivo` |
 | `tipo` | `gasto` \| `ingreso` \| `transferencia_*` |
-| `date_from` / `date_to` | periodo |
+| `date_from` / `date_to` | period |
 
-Exportar el mismo set filtrado: `GET /transactions/export?format=csv|json` (máx. 10k filas).
+Export the same filtered set: `GET /transactions/export?format=csv|json` (max 10k rows).
 
-### Presupuestos — `/budgets`
+### Budgets — `/budgets`
 
-- Crear: `POST /budgets` con `category_id` + `limite` (periodo `mensual`).
-- Progreso: `GET /budgets/status` o el bloque `budgets_status` del summary.
-- Soft-delete / reactivate como el resto de entidades.
+- Create: `POST /budgets` with `category_id` + `limite` (period `mensual`).
+- Progress: `GET /budgets/status` or the `budgets_status` block of the summary.
+- Soft-delete / reactivate like the rest of the entities.
 
-### Crear movimiento
+### Create transaction
 
-- Cuenta propia: `medio_pago: "cuenta"` + `account_id`.
-- Efectivo: `medio_pago: "efectivo"` + `moneda` (**sin** `account_id`).
-- `contraparte_id` opcional.
-- Gasto/transferencia con monto > saldo → **400** `"Fondos insuficientes..."`.
-- No crear cuentas con `tipo: "efectivo"` a mano → **400** (wallet automático).
+- Own account: `medio_pago: "cuenta"` + `account_id`.
+- Cash: `medio_pago: "efectivo"` + `moneda` (**without** `account_id`).
+- `contraparte_id` optional.
+- Expense/transfer with amount > balance → **400** `"Fondos insuficientes..."`.
+- Don't create accounts with `tipo: "efectivo"` by hand → **400** (automatic wallet).
 
-Transferencias: `POST /transactions/transfers` entre dos cuentas propias (incluye banco↔efectivo).
+Transfers: `POST /transactions/transfers` between two of your own accounts (includes bank↔cash).
 
 ---
 
-## 5. Errores que el FE debe manejar
+## 5. Errors the FE must handle
 
-| Código | Acción sugerida en UI |
+| Code | Suggested UI action |
 |--------|------------------------|
-| 400 | Toast con `detail` (fondos, reglas de negocio) |
-| 401 | Refresh; si falla → login |
-| 403 | Sin permiso / MFA admin |
-| 404 | “No encontrado” (también recursos ajenos) |
-| 422 | Validación de formulario (revisar body) |
-| 429 | Esperar / backoff (auth) |
+| 400 | Toast with `detail` (funds, business rules) |
+| 401 | Refresh; if it fails → login |
+| 403 | No permission / admin MFA |
+| 404 | “Not found” (also others' resources) |
+| 422 | Form validation (check the body) |
+| 429 | Wait / backoff (auth) |
 
-`detail` suele ser string; en 422 de Pydantic puede ser lista de errores.
+`detail` is usually a string; in a Pydantic 422 it can be a list of errors.
 
 ---
 
-## 6. Checklist de integración
+## 6. Integration checklist
 
-- [ ] Login + persistencia de tokens + refresh  
-- [ ] Home con `/reports/summary` (KPI + mes + categorías + presupuestos)  
-- [ ] Filtro de periodo y de cuenta  
-- [ ] Lista de cuentas con saldo (incl. Efectivo)  
-- [ ] Feed de transacciones con paginación  
-- [ ] Export CSV/JSON  
-- [ ] CRUD presupuestos / barra de consumo  
-- [ ] Alta gasto cuenta / efectivo / con contraparte  
-- [ ] Transferencia entre cuentas  
-- [ ] Manejo 400 fondos insuficientes y 401/429  
+- [ ] Login + token persistence + refresh  
+- [ ] Home with `/reports/summary` (KPI + month + categories + budgets)  
+- [ ] Period and account filter  
+- [ ] Account list with balance (incl. Cash)  
+- [ ] Transaction feed with pagination  
+- [ ] CSV/JSON export  
+- [ ] Budget CRUD / consumption bar  
+- [ ] Add expense account / cash / with counterparty  
+- [ ] Transfer between accounts  
+- [ ] Handle 400 insufficient funds and 401/429  
 
-OpenAPI siempre actualizado vía FastAPI; si hace falta un snapshot:
+OpenAPI is always up to date via FastAPI; if you need a snapshot:
 
 ```bash
 curl -s http://localhost:8000/openapi.json -o docs/openapi.snapshot.json

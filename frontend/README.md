@@ -1,43 +1,43 @@
 # LuCash — Frontend
 
-SPA de control de finanzas personales. Consume la API REST del backend en **`/api/v1`**.
+Personal finance management SPA. Consumes the backend REST API at **`/api/v1`**.
 
 **Stack:** Vite 5 · JavaScript ES modules (vanilla) · Tailwind CDN · Chart.js · Lucide Icons
 
 ---
 
-## Arranque
+## Startup
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173  (strictPort)
-npm run build    # salida en dist/
-npm run preview  # previsualizar build
+npm run build    # output in dist/
+npm run preview  # preview build
 ```
 
-Requisito: backend en `http://127.0.0.1:8000` (Docker Compose en `../backend`).
+Requirement: backend at `http://127.0.0.1:8000` (Docker Compose in `../backend`).
 
-### Proxy de desarrollo
+### Development proxy
 
-[`vite.config.js`](vite.config.js) reenvía `/api` → `http://127.0.0.1:8000`.  
-El cliente usa base relativa `API_BASE_URL = '/api/v1'`, así que **no hay problemas de CORS** entre `localhost` y `127.0.0.1`.
+[`vite.config.js`](vite.config.js) forwards `/api` → `http://127.0.0.1:8000`.  
+The client uses the relative base `API_BASE_URL = '/api/v1'`, so there are **no CORS issues** between `localhost` and `127.0.0.1`.
 
 ---
 
-## Estructura
+## Structure
 
 ```
 frontend/
-├── index.html              # Shell: auth, MFA, sidebar, modales, viewport
-├── vite.config.js          # puerto 5173 + proxy /api
+├── index.html              # Shell: auth, MFA, sidebar, modals, viewport
+├── vite.config.js          # port 5173 + /api proxy
 ├── package.json
 └── src/
-    ├── main.js             # Estado, auth, handlers, carga de datos
-    ├── style.css           # Tema glass / tipografía
+    ├── main.js             # State, auth, handlers, data loading
+    ├── style.css           # Glass theme / typography
     ├── services/
-    │   └── api.js          # Cliente HTTP (JWT, refresh, páginas)
+    │   └── api.js          # HTTP client (JWT, refresh, pages)
     ├── router/
-    │   └── router.js       # Rutas SPA + gate de Catálogo (admin+MFA)
+    │   └── router.js       # SPA routes + Catalog gate (admin+MFA)
     └── views/
         ├── DashboardView.js
         ├── TransactionsView.js
@@ -45,68 +45,68 @@ frontend/
         ├── AccountsView.js
         ├── CounterpartiesView.js
         ├── BudgetsView.js
-        ├── CatalogView.js      # solo admin con MFA
+        ├── CatalogView.js      # admin with MFA only
         └── SettingsView.js
 ```
 
-Patrón de vista: cada módulo exporta `{ render(), init(state, utils) }`. El router inyecta HTML en `#router-viewport` y llama a `init`.
+View pattern: each module exports `{ render(), init(state, utils) }`. The router injects HTML into `#router-viewport` and calls `init`.
 
 ---
 
-## Pantallas
+## Screens
 
-| Ruta (`switchTab`) | Vista | Descripción |
+| Route (`switchTab`) | View | Description |
 |--------------------|-------|-------------|
-| `dashboard` | Panel | KPIs, comparativa de periodo, gráficos, desgloses de `/reports/summary` |
-| `transactions` | Transacciones | Filtros **en servidor**, export CSV/JSON, CRUD gasto/ingreso |
-| `transfers` | Transferencias | `POST /transactions/transfers` (misma moneda) |
-| `accounts` | Cuentas | Listado con saldo; crear/editar; desactivar/reactivar |
-| `counterparties` | Contrapartes | CRUD + soft-delete |
-| `budgets` | Presupuestos | Límites + `/budgets/status`; desactivar/reactivar |
-| `catalog` | Catálogo | Categorías/subcategorías (escribe solo **admin + MFA**) |
-| `settings` | Ajustes | Perfil, setup MFA TOTP, desactivar cuenta propia |
+| `dashboard` | Panel | KPIs, period comparison, charts, breakdowns from `/reports/summary` |
+| `transactions` | Transactions | **Server-side** filters, CSV/JSON export, expense/income CRUD |
+| `transfers` | Transfers | `POST /transactions/transfers` (same currency) |
+| `accounts` | Accounts | List with balance; create/edit; deactivate/reactivate |
+| `counterparties` | Counterparties | CRUD + soft-delete |
+| `budgets` | Budgets | Limits + `/budgets/status`; deactivate/reactivate |
+| `catalog` | Catalog | Categories/subcategories (write only **admin + MFA**) |
+| `settings` | Settings | Profile, TOTP MFA setup, deactivate own account |
 
 ---
 
-## Autenticación
+## Authentication
 
-1. Registro: `POST /auth/register` (JSON).
+1. Registration: `POST /auth/register` (JSON).
 2. Login: `POST /auth/login` (**form-urlencoded** `username` / `password`).
-3. Tokens en `localStorage`: `ff_access_token`, `ff_refresh_token`.
-4. Si la respuesta trae `mfa_required`, se muestra la pantalla MFA → `POST /auth/mfa/verify`.
-5. En `401` con JWT, el cliente intenta `POST /auth/refresh` una vez y reintenta.
-6. Logout: `POST /auth/logout` + limpia tokens.
+3. Tokens in `localStorage`: `ff_access_token`, `ff_refresh_token`.
+4. If the response returns `mfa_required`, the MFA screen is shown → `POST /auth/mfa/verify`.
+5. On `401` with JWT, the client tries `POST /auth/refresh` once and retries.
+6. Logout: `POST /auth/logout` + clears tokens.
 
-Usuarios demo del seed backend: `demo001` / `Password123!` (ver [`../backend/docs/FRONTEND.md`](../backend/docs/FRONTEND.md)).
+Demo users from the backend seed: `demo001` / `Password123!` (see [`../backend/docs/FRONTEND.md`](../backend/docs/FRONTEND.md)).
 
 ---
 
-## Cliente API (`src/services/api.js`)
+## API client (`src/services/api.js`)
 
-Responsabilidades:
+Responsibilities:
 
-- Headers `Authorization: Bearer …`
-- Errores FastAPI (`detail` string o lista de validación)
-- `fetchAllPages` para recursos paginados (`limit`/`offset`, máx. 100)
-- Métodos alineados a los contratos del backend (campos en español: `monto`, `tipo`, `fecha`, `limite`, …)
+- `Authorization: Bearer …` headers
+- FastAPI errors (`detail` string or validation list)
+- `fetchAllPages` for paginated resources (`limit`/`offset`, max 100)
+- Methods aligned with the backend contracts (Spanish field names: `monto`, `tipo`, `fecha`, `limite`, …)
 
-### Recursos cubiertos
+### Covered resources
 
-| Dominio | Operaciones principales |
+| Domain | Main operations |
 |---------|-------------------------|
 | Auth | register, login, mfaVerify/setup/confirm, logout, me, refresh |
 | Users | get / update / deactivate |
 | Accounts | list, create, update, deactivate, reactivate |
 | Counterparties | CRUD + reactivate |
-| Categories / Subcategories | list + escritura admin |
-| Transactions | list (filtros), CRUD, transfers, export |
+| Categories / Subcategories | list + admin write |
+| Transactions | list (filters), CRUD, transfers, export |
 | Budgets | list, status, create, update, deactivate, reactivate |
 | Reports | `getReportSummary({ account_id, date_from, date_to })` |
-| Health | `GET /health` (indicador de conexión) |
+| Health | `GET /health` (connection indicator) |
 
 ---
 
-## Estado central (`main.js`)
+## Central state (`main.js`)
 
 ```js
 state = {
@@ -116,44 +116,44 @@ state = {
 }
 ```
 
-Al iniciar sesión se ejecuta `Router.init` y luego `loadAllData()` en paralelo (cuentas, catálogo, movimientos, presupuestos, contrapartes, reporte, `/auth/me`).
+On login, `Router.init` runs and then `loadAllData()` in parallel (accounts, catalog, transactions, budgets, counterparties, report, `/auth/me`).
 
-**Contratos importantes (evitar regresiones):**
+**Important contracts (avoid regressions):**
 
-- Payloads usan nombres del backend (`monto`, no `amount`; `tipo: gasto|ingreso`).
-- `medio_pago=cuenta` → `account_id` (sin wallets `tipo=efectivo` en el selector).
+- Payloads use backend names (`monto`, not `amount`; `tipo: gasto|ingreso`).
+- `medio_pago=cuenta` → `account_id` (no `tipo=efectivo` wallets in the selector).
 - `medio_pago=efectivo` → `moneda` + `account_id: null`.
-- Soft-delete HTTP = desactivar; la UI ofrece reactivar donde el API lo permite.
-- **Saldo neto** del panel = `total_ingresos − total_gastos` del summary (sin transferencias).
+- HTTP soft-delete = deactivate; the UI offers reactivation where the API allows it.
+- **Net balance** on the panel = `total_ingresos − total_gastos` from the summary (excluding transfers).
 
 ---
 
 ## UI / UX
 
-- Shell en `index.html`: login/registro, challenge MFA, sidebar, modales globales.
-- Estilos glass en `style.css` + utilidades Tailwind (CDN).
-- Iconos Lucide; gráficos Chart.js en el dashboard.
-- Indicador de API (ping a `/health` cada 5 s).
+- Shell in `index.html`: login/registration, MFA challenge, sidebar, global modals.
+- Glass styles in `style.css` + Tailwind utilities (CDN).
+- Lucide icons; Chart.js charts on the dashboard.
+- API indicator (ping to `/health` every 5 s).
 
 ---
 
-## Convenciones para contribuir
+## Contribution conventions
 
-1. No modificar el backend desde este cliente: adaptar el frontend a `/api/v1`.
-2. Mantener el puerto **5173** (`strictPort`) o el proxy deja de ser el entorno esperado.
-3. Nuevas pantallas: vista + ruta en `router.js` + enlace en el sidebar de `index.html` + handlers en `main.js` si hace falta.
-4. Preferir pantallas delgadas (`render`/`init`) y lógica de API/sesión en `api.js` / `main.js`.
+1. Do not modify the backend from this client: adapt the frontend to `/api/v1`.
+2. Keep port **5173** (`strictPort`) or the proxy stops being the expected environment.
+3. New screens: view + route in `router.js` + link in the `index.html` sidebar + handlers in `main.js` if needed.
+4. Prefer thin screens (`render`/`init`) and keep API/session logic in `api.js` / `main.js`.
 
 ---
 
-## Resolución de problemas
+## Troubleshooting
 
-| Síntoma | Qué revisar |
+| Symptom | What to check |
 |---------|-------------|
-| Login “falla” sin 401 en Network | Estás fuera de `:5173` o sin proxy (evita puertos alternos) |
-| 401 tras login | Token no guardado / backend caído / rate limit auth (~10/min) |
-| Catálogo no aparece | Usuario no es `admin` o MFA no está activo |
-| 422 al crear movimiento | Falta subcategoría en el catálogo o IDs inválidos |
-| Transferencia rechazada | Cuentas distintas, misma moneda, ≥ 2 cuentas activas |
+| Login “fails” without 401 in Network | You are outside `:5173` or without the proxy (avoid alternate ports) |
+| 401 after login | Token not saved / backend down / auth rate limit (~10/min) |
+| Catalog does not appear | User is not `admin` or MFA is not enabled |
+| 422 when creating a transaction | Missing subcategory in the catalog or invalid IDs |
+| Transfer rejected | Different accounts, same currency, ≥ 2 active accounts |
 
-Más detalle de contrato HTTP: [`../backend/docs/API.md`](../backend/docs/API.md) y [`../backend/docs/FRONTEND.md`](../backend/docs/FRONTEND.md).
+More HTTP contract detail: [`../backend/docs/API.md`](../backend/docs/API.md) and [`../backend/docs/FRONTEND.md`](../backend/docs/FRONTEND.md).

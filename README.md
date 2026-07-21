@@ -1,22 +1,22 @@
-# LucCash
+# LuCash
 
-Aplicación de **finanzas personales**: cuentas, movimientos, transferencias, presupuestos, catálogo de categorías y reportes.
+**Personal finance** application: accounts, transactions, transfers, budgets, category catalog, and reports.
 
-Este repositorio agrupa dos partes:
+This repository groups two parts:
 
-| Carpeta | Rol |
+| Folder | Role |
 |---------|-----|
-| [`backend/`](backend/) | API REST (FastAPI + PostgreSQL + JWT/MFA) |
-| [`frontend/`](frontend/) | SPA cliente (Vite + JavaScript vanilla) |
+| [`backend/`](backend/) | REST API (FastAPI + PostgreSQL + JWT/MFA) |
+| [`frontend/`](frontend/) | Client SPA (Vite + vanilla JavaScript) |
 
-El frontend **nunca** habla con Postgres: solo consume ` /api/v1/... `.
+The frontend **never** talks to Postgres directly: it only consumes ` /api/v1/... `.
 
 ---
 
-## Arquitectura
+## Architecture
 
 ```
-┌─────────────────┐      HTTP (proxy Vite en dev)      ┌──────────────────┐
+┌─────────────────┐      HTTP (Vite proxy in dev)      ┌──────────────────┐
 │  Frontend SPA   │ ─────────────────────────────────► │  Backend FastAPI │
 │  localhost:5173 │         /api/v1/...                │  localhost:8000  │
 └─────────────────┘                                    └────────┬─────────┘
@@ -30,47 +30,47 @@ El frontend **nunca** habla con Postgres: solo consume ` /api/v1/... `.
 
 ---
 
-## Requisitos
+## Requirements
 
 - **Node.js** 18+ (frontend)
 - **Docker** + Docker Compose (backend: API + Postgres)
-- Opcional: Python 3.11+ y `.venv` si corres el backend fuera de Docker
+- Optional: Python 3.11+ and `.venv` if you run the backend outside Docker
 
 ---
 
-## Arranque rápido
+## Quick start
 
 ### 1. Backend
 
 ```bash
 cd backend
-docker compose up -d          # db + api en :8000 (y Postgres en :5433)
-# Documentación detallada: backend/README.md
+docker compose up -d          # db + api on :8000 (and Postgres on :5433)
+# Detailed documentation: backend/README.md
 ```
 
 - API: http://localhost:8000  
-- OpenAPI: http://localhost:8000/docs (si `DEBUG=true`)  
-- Prefijo: `/api/v1`
+- OpenAPI: http://localhost:8000/docs (if `DEBUG=true`)  
+- Prefix: `/api/v1`
 
-Seed demo (recomendado):
+Demo seed (recommended):
 
 ```bash
-# Ver backend/docs/FRONTEND.md y backend/scripts/data/demo_100_users.sql
+# See backend/docs/FRONTEND.md and backend/scripts/data/demo_100_users.sql
 ```
 
-Credenciales demo (usuarios normales, sin MFA):
+Demo credentials (regular users, no MFA):
 
-| Campo | Valor |
+| Field | Value |
 |-------|--------|
-| Usuario | `demo001` … `demo100` |
-| Contraseña | `Password123!` |
+| Username | `demo001` … `demo100` |
+| Password | `Password123!` |
 
-Admin: no hay admin fijo. Se promueve un usuario existente:
+Admin: there is no fixed admin. An existing user is promoted:
 
 ```bash
 cd backend
 python scripts/promote_admin.py demo001
-# Luego activar MFA desde la UI (Ajustes) o vía API
+# Then enable MFA from the UI (Settings) or via API
 ```
 
 ### 2. Frontend
@@ -81,61 +81,61 @@ npm install
 npm run dev
 ```
 
-Abre **http://localhost:5173** (puerto fijo; proxy de `/api` → `http://127.0.0.1:8000`).
+Open **http://localhost:5173** (fixed port; proxy from `/api` → `http://127.0.0.1:8000`).
 
-Documentación del cliente: [`frontend/README.md`](frontend/README.md).
-
----
-
-## Funcionalidades (producto)
-
-- Registro / login JWT (refresh automático)
-- MFA TOTP (obligatorio para operaciones de **admin**)
-- Cuentas (saldo inicial al crear; el saldo solo cambia con movimientos)
-- Transacciones gasto/ingreso (cuenta o efectivo)
-- Transferencias entre cuentas propias (misma moneda)
-- Contrapartes
-- Presupuestos mensuales + estado de consumo
-- Reportes de dashboard (totales, categorías, medios, cuentas, comparativa de periodo)
-- Export CSV/JSON de transacciones
-- Catálogo global de categorías/subcategorías (**admin + MFA**)
-- Soft-delete (desactivar / reactivar) en la mayoría de recursos
+Client documentation: [`frontend/README.md`](frontend/README.md).
 
 ---
 
-## Documentación
+## Features (product)
 
-| Ámbito | Dónde |
+- JWT registration / login (automatic refresh)
+- TOTP MFA (required for **admin** operations)
+- Accounts (initial balance at creation; balance only changes through transactions)
+- Expense/income transactions (account or cash)
+- Transfers between your own accounts (same currency)
+- Counterparties
+- Monthly budgets + consumption status
+- Dashboard reports (totals, categories, payment methods, accounts, period comparison)
+- CSV/JSON export of transactions
+- Global catalog of categories/subcategories (**admin + MFA**)
+- Soft-delete (deactivate / reactivate) on most resources
+
+---
+
+## Documentation
+
+| Area | Where |
 |--------|--------|
-| Índice backend | [`backend/docs/INDICE.md`](backend/docs/INDICE.md) |
-| API HTTP | [`backend/docs/API.md`](backend/docs/API.md) |
-| Negocio / reglas | [`backend/docs/NEGOCIO.md`](backend/docs/NEGOCIO.md) |
-| Seguridad / MFA | [`backend/docs/SEGURIDAD.md`](backend/docs/SEGURIDAD.md) |
-| Integración frontend↔API | [`backend/docs/FRONTEND.md`](backend/docs/FRONTEND.md) |
-| SPA cliente | [`frontend/README.md`](frontend/README.md) |
+| Backend index | [`backend/docs/INDEX.md`](backend/docs/INDEX.md) |
+| HTTP API | [`backend/docs/API.md`](backend/docs/API.md) |
+| Business / rules | [`backend/docs/BUSINESS.md`](backend/docs/BUSINESS.md) |
+| Security / MFA | [`backend/docs/SECURITY.md`](backend/docs/SECURITY.md) |
+| Frontend↔API integration | [`backend/docs/FRONTEND.md`](backend/docs/FRONTEND.md) |
+| Client SPA | [`frontend/README.md`](frontend/README.md) |
 
 ---
 
-## Estructura del workspace
+## Workspace structure
 
 ```
 Trabajando/
-├── README.md           ← este archivo
-├── backend/            ← API FastAPI (git propio o módulo)
+├── README.md           ← this file
+├── backend/            ← FastAPI API (own git or module)
 │   ├── app/
 │   ├── docs/
 │   ├── scripts/
 │   └── README.md
-└── frontend/           ← SPA Vite (git propio en muchos flujos)
+└── frontend/           ← Vite SPA (own git in many workflows)
     ├── src/
     ├── index.html
     └── README.md
 ```
 
-> Monorepo: el código de `backend/` y `frontend/` vive en este mismo repositorio (`kl2219979/app`).
+> Monorepo: the `backend/` and `frontend/` code lives in this same repository (`kl2219979/app`).
 
 ---
 
-## Licencia / uso
+## License / usage
 
-Proyecto académico / de práctica de equipo. Ver roles y convenciones en [`backend/README.md`](backend/README.md).
+Academic / team practice project. See roles and conventions in [`backend/README.md`](backend/README.md).

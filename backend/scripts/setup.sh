@@ -17,7 +17,7 @@
 # QUÉ NO HACE:
 #   No enciende la base ni la API. Eso lo haces después (ver mensajes al final).
 #
-# Guía completa: docs/COMO_FUNCIONA.md
+# Guía completa: docs/HOW_IT_WORKS.md
 # -----------------------------------------------------------------------------
 set -euo pipefail
 
@@ -93,5 +93,5 @@ echo "  1. docker compose up db -d"
 echo "  2. ./scripts/migrate.sh"
 echo "  3. source .venv/bin/activate && uvicorn app.main:app --reload"
 echo ""
-echo "Lee docs/COMO_FUNCIONA.md si quieres entender el porqué de cada paso."
+echo "Lee docs/HOW_IT_WORKS.md si quieres entender el porqué de cada paso."
 echo "O todo junto: docker compose up --build"

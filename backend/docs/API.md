@@ -1,26 +1,26 @@
-# API HTTP — catálogo completo
+# HTTP API — full catalog
 
-Prefijo: **`/api/v1`**
+Prefix: **`/api/v1`**
 
-Autenticación:
+Authentication:
 
-| Etiqueta | Significado |
+| Label | Meaning |
 |----------|-------------|
-| **público** | Sin Bearer |
-| **JWT** | Header `Authorization: Bearer <access_token>` |
-| **JWT+admin+MFA** | JWT de usuario con `rol=admin` y `mfa_enabled=true` |
+| **public** | No Bearer |
+| **JWT** | `Authorization: Bearer <access_token>` header |
+| **JWT+admin+MFA** | User JWT with `rol=admin` and `mfa_enabled=true` |
 
-Formato de listados paginados:
+Paginated listing format:
 
 ```json
 { "items": [ ... ], "total": 42, "limit": 20, "offset": 0 }
 ```
 
-Base local: `http://localhost:8000`  
-Swagger (solo si `DEBUG=true`): `http://localhost:8000/docs`
+Local base: `http://localhost:8000`  
+Swagger (only if `DEBUG=true`): `http://localhost:8000/docs`
 
-Reglas de producto: [NEGOCIO.md](NEGOCIO.md).  
-Auth detallada: [SEGURIDAD.md](SEGURIDAD.md).
+Product rules: [BUSINESS.md](BUSINESS.md).  
+Detailed auth: [SECURITY.md](SECURITY.md).
 
 ---
 
@@ -28,9 +28,9 @@ Auth detallada: [SEGURIDAD.md](SEGURIDAD.md).
 
 ### `GET /health`
 
-- **Auth:** público  
-- **Qué hace:** comprueba que el proceso responde (no consulta BD).  
-- **Respuesta típica:** `{ "status": "ok" }` (ver implementación actual).
+- **Auth:** public  
+- **What it does:** checks that the process responds (does not query the DB).  
+- **Typical response:** `{ "status": "ok" }` (see current implementation).
 
 ---
 
@@ -38,20 +38,20 @@ Auth detallada: [SEGURIDAD.md](SEGURIDAD.md).
 
 ### `POST /auth/register`
 
-- **Auth:** público (rate limit)
-- **Body JSON:**
+- **Auth:** public (rate limit)
+- **JSON body:**
   - `nombres`, `apellidos`, `fecha_nacimiento`, `genero`
-  - `correo`, `usuario`, `contrasena` (mín. 8)
-- **201:** usuario público (sin hash de contraseña)
-- **409:** correo o usuario ya existen
+  - `correo`, `usuario`, `contrasena` (min. 8)
+- **201:** public user (without password hash)
+- **409:** email or username already exist
 
 ### `POST /auth/login`
 
-- **Auth:** público (rate limit)
-- **Body:** form OAuth2 (`application/x-www-form-urlencoded`)
-  - `username` = correo **o** nombre de usuario
+- **Auth:** public (rate limit)
+- **Body:** OAuth2 form (`application/x-www-form-urlencoded`)
+  - `username` = email **or** username
   - `password`
-- **200 — usuario normal / admin sin MFA aún:**
+- **200 — regular user / admin without MFA yet:**
   ```json
   {
     "access_token": "...",
@@ -61,57 +61,57 @@ Auth detallada: [SEGURIDAD.md](SEGURIDAD.md).
     "mfa_token": null
   }
   ```
-- **200 — admin con MFA activo:**
+- **200 — admin with active MFA:**
   ```json
   {
     "access_token": null,
     "refresh_token": null,
     "token_type": "bearer",
     "mfa_required": true,
-    "mfa_token": "<challenge JWT corto>"
+    "mfa_token": "<short challenge JWT>"
   }
   ```
-- **401:** credenciales inválidas (se registra en log **sin** password)
-- **403:** usuario desactivado
+- **401:** invalid credentials (logged **without** password)
+- **403:** deactivated user
 
 ### `POST /auth/mfa/verify`
 
-- **Auth:** público (rate limit); usa el `mfa_token` del login
+- **Auth:** public (rate limit); uses the `mfa_token` from login
 - **Body:** `{ "mfa_token": "...", "code": "123456" }`
 - **200:** `access_token` + `refresh_token`
 
 ### `POST /auth/mfa/setup`
 
 - **Auth:** JWT
-- **Qué hace:** genera secreto TOTP (aún no activa MFA)
+- **What it does:** generates a TOTP secret (does not enable MFA yet)
 - **200:** `{ "secret", "otpauth_uri", "mfa_enabled": false }`
-- Escanea `otpauth_uri` con Google Authenticator / Authy / etc.
+- Scan `otpauth_uri` with Google Authenticator / Authy / etc.
 
 ### `POST /auth/mfa/confirm`
 
 - **Auth:** JWT
 - **Body:** `{ "code": "123456" }`
-- **200:** usuario con `mfa_enabled: true`
+- **200:** user with `mfa_enabled: true`
 
 ### `POST /auth/refresh`
 
-- **Auth:** público (rate limit)
+- **Auth:** public (rate limit)
 - **Body:** `{ "refresh_token": "..." }`
-- **200:** nuevo par access+refresh (el anterior queda **revocado**)
-- **403:** admin sin MFA no puede refrescar
+- **200:** new access+refresh pair (the previous one is **revoked**)
+- **403:** admin without MFA cannot refresh
 
 ### `POST /auth/logout`
 
 - **Auth:** JWT
-- **Body opcional:** `{ "refresh_token": "..." }`
-  - Con token: revoca ese refresh **solo si es del usuario autenticado**
-  - Sin token: revoca **todos** los refresh del usuario
+- **Optional body:** `{ "refresh_token": "..." }`
+  - With token: revokes that refresh **only if it belongs to the authenticated user**
+  - Without token: revokes **all** of the user's refresh tokens
 - **204**
 
 ### `GET /auth/me`
 
 - **Auth:** JWT
-- **200:** perfil (`id`, nombres, correo, usuario, `rol`, `activo`, `mfa_enabled`, …)
+- **200:** profile (`id`, nombres, correo, usuario, `rol`, `activo`, `mfa_enabled`, …)
 
 ---
 
@@ -120,17 +120,17 @@ Auth detallada: [SEGURIDAD.md](SEGURIDAD.md).
 ### `GET /users/{user_id}`
 
 - **Auth:** JWT  
-- Solo el propio `user_id` (si no → 403).
+- Only your own `user_id` (otherwise → 403).
 
 ### `PUT /users/{user_id}`
 
 - **Auth:** JWT (self)  
-- Body parcial: nombres, apellidos, fecha_nacimiento, genero, correo, usuario, contrasena.
+- Partial body: nombres, apellidos, fecha_nacimiento, genero, correo, usuario, contrasena.
 
 ### `DELETE /users/{user_id}`
 
 - **Auth:** JWT (self)  
-- Soft-delete: `activo=false` + revoca refresh. **No borra** cuentas ni movimientos.  
+- Soft-delete: `activo=false` + revokes refresh. **Does not delete** accounts or transactions.  
 - **204**
 
 ---
@@ -144,38 +144,38 @@ Auth detallada: [SEGURIDAD.md](SEGURIDAD.md).
 
 ### `GET /accounts/{account_id}`
 
-- **Auth:** JWT (propia; incluye inactivas si conoces el id)
+- **Auth:** JWT (own; includes inactive ones if you know the id)
 
 ### `POST /accounts`
 
 - **Auth:** JWT  
 - Body:
   - `banco`, `tipo`, `moneda`
-  - `saldo_inicial` (Decimal ≥ 0) ← **solo aquí**
-- Respuesta incluye `saldo` (igual al inicial) y `activo: true`
+  - `saldo_inicial` (Decimal ≥ 0) ← **only here**
+- The response includes `saldo` (equal to the initial one) and `activo: true`
 
 ### `PUT /accounts/{account_id}`
 
 - **Auth:** JWT  
-- Body permitido: `banco`, `tipo`, `moneda`  
-- Enviar `saldo` → **422** (`extra=forbid`)  
-- Cuenta inactiva → 400
+- Allowed body: `banco`, `tipo`, `moneda`  
+- Sending `saldo` → **422** (`extra=forbid`)  
+- Inactive account → 400
 
 ### `DELETE /accounts/{account_id}`
 
-- Soft-delete `activo=false`. Historial intacto. Saldo **no** se altera.  
+- Soft-delete `activo=false`. History intact. Balance is **not** altered.  
 - **204**
 
 ### `POST /accounts/{account_id}/reactivate`
 
-- Vuelve `activo=true`.  
-- **200** con la cuenta
+- Sets `activo=true` again.  
+- **200** with the account
 
 ---
 
 ## counterparties
 
-Agenda de terceros fuera del sistema (JWT, ownership propio).
+Address book of third parties outside the system (JWT, own ownership).
 
 ### `GET /counterparties`
 
@@ -185,11 +185,11 @@ Query: `limit`, `offset`, `include_inactive`
 
 ### `POST /counterparties`
 
-Body: `nombre` (requerido), `banco`, `numero_cuenta`, `notas` (opcionales)
+Body: `nombre` (required), `banco`, `numero_cuenta`, `notas` (optional)
 
 ### `PUT /counterparties/{counterparty_id}`
 
-Inactiva → 400 (reactivar primero).
+Inactive → 400 (reactivate first).
 
 ### `DELETE /counterparties/{counterparty_id}`
 
@@ -201,7 +201,7 @@ Soft-delete. **204**
 
 ## categories
 
-Lectura: cualquier JWT. Escritura: **JWT+admin+MFA**.
+Read: any JWT. Write: **JWT+admin+MFA**.
 
 ### `GET /categories`
 
@@ -212,13 +212,13 @@ Query: `limit`, `offset`, `include_inactive`
 ### `POST /categories`
 
 Body: `nombre`, `descripcion`  
-**409** si el nombre ya existe
+**409** if the name already exists
 
 ### `PUT /categories/{category_id}`
 
 ### `DELETE /categories/{category_id}`
 
-Desactiva categoría **y** subcategorías hijas. Historial de txs se conserva.  
+Deactivates the category **and** child subcategories. Transaction history is preserved.  
 **204**
 
 ---
@@ -227,14 +227,14 @@ Desactiva categoría **y** subcategorías hijas. Historial de txs se conserva.
 
 ### `GET /subcategories`
 
-Query: `category_id` (opcional), `limit`, `offset`, `include_inactive`
+Query: `category_id` (optional), `limit`, `offset`, `include_inactive`
 
 ### `GET /subcategories/{subcategory_id}`
 
 ### `POST /subcategories` — admin+MFA
 
 Body: `category_id`, `nombre`, `descripcion`  
-La categoría debe existir y estar activa.
+The category must exist and be active.
 
 ### `PUT /subcategories/{subcategory_id}` — admin+MFA
 
@@ -255,20 +255,20 @@ Soft-delete. **204**
   - `medio_pago`: `cuenta` \| `efectivo`
   - `tipo`: `gasto` \| `ingreso` \| `transferencia_salida` \| `transferencia_entrada`
   - `date_from`, `date_to` (YYYY-MM-DD)
-- Solo movimientos **activos** del usuario  
-- **Orden estable:** `fecha DESC`, `id DESC` (más recientes primero)
-- Página: `{ items, total, limit, offset }`
+- Only the user's **active** transactions  
+- **Stable order:** `fecha DESC`, `id DESC` (most recent first)
+- Page: `{ items, total, limit, offset }`
 
 ### `GET /transactions/export`
 
 - **Auth:** JWT  
-- Query: mismos filtros que el listado + `format=csv|json` (default `csv`)  
-- Descarga hasta **10_000** movimientos activos  
-- CSV: `Content-Disposition` attachment; JSON: lista de objetos
+- Query: same filters as the listing + `format=csv|json` (default `csv`)  
+- Downloads up to **10_000** active transactions  
+- CSV: `Content-Disposition` attachment; JSON: list of objects
 
 ### `POST /transactions`
 
-Body (pago con cuenta propia):
+Body (payment with own account):
 
 ```json
 {
@@ -284,7 +284,7 @@ Body (pago con cuenta propia):
 }
 ```
 
-Body (pago en efectivo — sin `account_id`):
+Body (cash payment — without `account_id`):
 
 ```json
 {
@@ -300,14 +300,14 @@ Body (pago en efectivo — sin `account_id`):
 }
 ```
 
-Reglas:
+Rules:
 
-- `tipo` solo `gasto` \| `ingreso` en create.
-- `medio_pago` default `cuenta`. Con `cuenta` → `account_id` obligatorio. Con `efectivo` → `moneda` obligatoria y **no** enviar `account_id` (422).
-- `contraparte_id` opcional; debe ser propia y activa (404 si no).
-- Efectivo resuelve/crea wallet `tipo=efectivo` y actualiza su saldo.
-- Gasto (y transferencias) con monto > saldo → **400** fondos insuficientes.
-- Respuesta incluye `medio_pago`, `contraparte_id`, `account_id` (siempre el id contable).
+- `tipo` only `gasto` \| `ingreso` on create.
+- `medio_pago` default `cuenta`. With `cuenta` → `account_id` required. With `efectivo` → `moneda` required and **do not** send `account_id` (422).
+- `contraparte_id` optional; must be your own and active (404 if not).
+- Cash resolves/creates a `tipo=efectivo` wallet and updates its balance.
+- Expense (and transfers) with amount > balance → **400** insufficient funds.
+- The response includes `medio_pago`, `contraparte_id`, `account_id` (always the accounting id).
 
 ### `POST /transactions/transfers`
 
@@ -325,45 +325,45 @@ Body:
 }
 ```
 
-Respuesta: `{ "grupo_transferencia", "salida", "entrada" }`  
-Misma moneda obligatoria. Sirve también para banco↔wallet efectivo (el wallet aparece en `GET /accounts`).
-Sin `contraparte_id`.
+Response: `{ "grupo_transferencia", "salida", "entrada" }`  
+Same currency required. Also works for bank↔cash wallet (the wallet appears in `GET /accounts`).
+No `contraparte_id`.
 
 ### `GET /transactions/{transaction_id}`
 
 ### `PUT /transactions/{transaction_id}`
 
-Solo movimientos operativos (`gasto`/`ingreso`) **sin** `grupo_transferencia`.  
-Puede cambiar `medio_pago` / `account_id` / `moneda` / `contraparte_id` con las mismas reglas de create.  
-Recalcula saldos (revierte viejo, aplica nuevo).
+Only operational transactions (`gasto`/`ingreso`) **without** `grupo_transferencia`.  
+Can change `medio_pago` / `account_id` / `moneda` / `contraparte_id` with the same create rules.  
+Recomputes balances (reverts old, applies new).
 
 ### `DELETE /transactions/{transaction_id}`
 
-Soft-delete + **revierte saldo**.  
-Si es transferencia, desactiva ambas piernas.  
+Soft-delete + **reverts balance**.  
+If it is a transfer, deactivates both legs.  
 **204**
 
 ---
 
 ## budgets
 
-Presupuesto mensual por categoría (`(user_id, category_id)` único).
+Monthly budget per category (`(user_id, category_id)` unique).
 
 ### `GET /budgets`
 
-- **Auth:** JWT — página `{ items, total, limit, offset }` (activos)
+- **Auth:** JWT — page `{ items, total, limit, offset }` (active)
 
 ### `GET /budgets/status`
 
 - **Auth:** JWT  
-- Lista de presupuestos activos con `gastado`, `restante`, `pct_usado`, `excedido` (mes calendario actual)
+- List of active budgets with `gastado`, `restante`, `pct_usado`, `excedido` (current calendar month)
 
 ### `GET /budgets/{budget_id}` / `GET /budgets/{budget_id}/status`
 
 ### `POST /budgets`
 
 Body: `{ "category_id": 2, "limite": "500000.00", "moneda": "COP", "periodo": "mensual" }`  
-Si ya existía uno inactivo para esa categoría, lo reactiva y actualiza el límite.
+If an inactive one already existed for that category, it reactivates it and updates the limit.
 
 ### `PUT /budgets/{budget_id}`
 
@@ -382,27 +382,27 @@ Soft-delete → **204**
 - **Auth:** JWT  
 - Query: `account_id`, `date_from`, `date_to`
 
-Respuesta (campos):
+Response (fields):
 
-| Campo | Significado |
+| Field | Meaning |
 |-------|-------------|
-| `total_ingresos` | Suma de `tipo=ingreso` activos |
-| `total_gastos` | Suma de `tipo=gasto` activos |
-| `balance_neto` | ingresos − gastos |
-| `total_transferencias` | Suma de `transferencia_salida` |
-| `by_category_gastos` / `by_category_ingresos` | Breakdown por categoría |
-| `by_subcategory_gastos` / `by_subcategory_ingresos` | Breakdown por subcategoría |
-| `by_medio_pago` | Totales `cuenta` vs `efectivo` |
-| `by_counterparty` | Top 10 terceros (gastos+ingresos con `contraparte_id`) |
-| `by_month` | Totales por año/mes |
-| `by_account` | Saldo actual + totales por cuenta |
-| `budgets_status` | Presupuestos activos vs gasto del mes calendario |
-| `period_comparison` | Periodo actual vs anterior (mismas longitudes o mes calendario) |
-| `date_from`, `date_to`, `account_id` | Eco de filtros |
+| `total_ingresos` | Sum of active `tipo=ingreso` |
+| `total_gastos` | Sum of active `tipo=gasto` |
+| `balance_neto` | income − expenses |
+| `total_transferencias` | Sum of `transferencia_salida` |
+| `by_category_gastos` / `by_category_ingresos` | Breakdown by category |
+| `by_subcategory_gastos` / `by_subcategory_ingresos` | Breakdown by subcategory |
+| `by_medio_pago` | `cuenta` vs `efectivo` totals |
+| `by_counterparty` | Top 10 third parties (expenses+income with `contraparte_id`) |
+| `by_month` | Totals by year/month |
+| `by_account` | Current balance + totals per account |
+| `budgets_status` | Active budgets vs the calendar month's spending |
+| `period_comparison` | Current vs previous period (same lengths or calendar month) |
+| `date_from`, `date_to`, `account_id` | Echo of filters |
 
-`period_comparison`: con ambos filtros de fecha → ventana previa de igual duración; sin fechas → mes actual (día 1→hoy) vs mes calendario anterior. `*_change_pct` es `null` si el anterior fue 0.
+`period_comparison`: with both date filters → previous window of equal duration; without dates → current month (day 1→today) vs previous calendar month. `*_change_pct` is `null` if the previous one was 0.
 
-Guía FE: [FRONTEND.md](FRONTEND.md).
+FE guide: [FRONTEND.md](FRONTEND.md).
 
 ---
 
@@ -410,46 +410,46 @@ Guía FE: [FRONTEND.md](FRONTEND.md).
 
 ### `POST /webhooks/inbound`
 
-- **Auth:** firma HMAC (no JWT)
-- **Header obligatorio:** `X-Webhook-Signature: t=<unix>,v1=<hex>`
-- **Body JSON:** `{ "event": "nombre", "data": { ... } }`
-- **Qué hace:** valida firma + schema; **no** hace HTTP saliente a URLs del payload (anti-SSRF)
+- **Auth:** HMAC signature (not JWT)
+- **Required header:** `X-Webhook-Signature: t=<unix>,v1=<hex>`
+- **JSON body:** `{ "event": "name", "data": { ... } }`
+- **What it does:** validates signature + schema; does **not** make outgoing HTTP to payload URLs (anti-SSRF)
 - **202:** `{ "received": true, "event": "..." }`
-- Rate limit propio (más holgado que auth)
+- Its own rate limit (more lenient than auth)
 
-Cómo se firma (mismo algoritmo que el servidor):
+How it is signed (same algorithm as the server):
 
 1. `signed = f"{timestamp}.".encode() + raw_body`
 2. `v1 = HMAC_SHA256(WEBHOOK_SECRET, signed).hexdigest()`
 3. Header = `t={timestamp},v1={v1}`
-4. Ventana máxima: 300 segundos
+4. Max window: 300 seconds
 
-Utilidad Python: `app.core.webhooks.sign_payload` / `verify_signature`.
+Python utility: `app.core.webhooks.sign_payload` / `verify_signature`.
 
 ---
 
-## Errores HTTP frecuentes
+## Common HTTP errors
 
-| Código | Cuándo |
+| Code | When |
 |--------|--------|
-| 400 | Regla de negocio (fondos insuficientes, cuenta inactiva, monedas distintas, editar transferencia, crear `tipo=efectivo`…) |
-| 401 | Sin token / token inválido / login fallido / firma webhook mala |
-| 403 | No eres el dueño / no eres admin / admin sin MFA / HTTPS requerido en prod |
-| 404 | Recurso inexistente o no tuyo (a menudo indistinguible a propósito) |
-| 409 | Conflicto (correo duplicado, nombre de categoría) |
-| 422 | Validación Pydantic (campos inválidos / `saldo` en PUT cuenta) |
-| 429 | Rate limit (auth / webhooks) — ver `docs/TESTING.md` si pruebas en masa |
-| 503 | Webhook sin `WEBHOOK_SECRET` configurado |
+| 400 | Business rule (insufficient funds, inactive account, different currencies, editing a transfer, creating `tipo=efectivo`…) |
+| 401 | No token / invalid token / failed login / bad webhook signature |
+| 403 | You are not the owner / not admin / admin without MFA / HTTPS required in prod |
+| 404 | Nonexistent resource or not yours (often indistinguishable on purpose) |
+| 409 | Conflict (duplicate email, category name) |
+| 422 | Pydantic validation (invalid fields / `saldo` in account PUT) |
+| 429 | Rate limit (auth / webhooks) — see `docs/TESTING.md` if testing in bulk |
+| 503 | Webhook without `WEBHOOK_SECRET` configured |
 
 ---
 
-## Mini flujo feliz (frontend)
+## Mini happy path (frontend)
 
 1. `POST /auth/register`  
-2. `POST /auth/login` → guardar tokens  
-3. `POST /accounts` con `saldo_inicial`  
+2. `POST /auth/login` → save tokens  
+3. `POST /accounts` with `saldo_inicial`  
 4. `GET /categories` + `GET /subcategories?category_id=`  
-5. `POST /transactions` (gasto/ingreso)  
+5. `POST /transactions` (expense/income)  
 6. `GET /reports/summary`  
-7. Cuando expire el access: `POST /auth/refresh`  
-8. Al cerrar sesión: `POST /auth/logout`
+7. When the access expires: `POST /auth/refresh`  
+8. On logout: `POST /auth/logout`

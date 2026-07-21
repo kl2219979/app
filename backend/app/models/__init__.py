@@ -11,7 +11,7 @@ CÓMO AGREGAR UN MODELO NUEVO
     4. ./scripts/migrate.sh
 
 MAPA DE RELACIONES
-    Ver docs/MODELOS.md
+    Ver docs/MODELS.md
 
 IMPORTANTE
     Definir el modelo NO inserta filas.

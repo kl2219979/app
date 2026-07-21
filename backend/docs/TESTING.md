@@ -1,41 +1,41 @@
-# Guía de testing del backend
+# Backend testing guide
 
-Referencia de cómo (y por qué) testamos.
-Complementa el patrón AAA con la **pirámide de tests**.
+Reference for how (and why) we test.
+Complements the AAA pattern with the **test pyramid**.
 
-Índice general: [INDICE.md](INDICE.md).
+General index: [INDEX.md](INDEX.md).
 
 ---
 
-## 1. Principio del equipo (pirámide)
+## 1. Team principle (pyramid)
 
 ```
     ┌─────────────────────────────┐
-    │  E2E (pocos)                │  Stack vivo: API + Postgres reales
+    │  E2E (few)                  │  Live stack: real API + Postgres
     ├─────────────────────────────┤
-    │  Integration (algunos)      │  TestClient HTTP o Postgres opcional
+    │  Integration (some)         │  HTTP TestClient or optional Postgres
     ├─────────────────────────────┤
-    │  Unit (muchos)              │  Services, repositories, security
+    │  Unit (many)                │  Services, repositories, security
     └─────────────────────────────┘
 ```
 
-Reglas:
+Rules:
 
-- La mayor parte de la cobertura vive en **unitarios**.
-- `tests/api` son **smoke** del contrato HTTP, no reescriben toda la lógica.
-- Los E2E están **apagados** por defecto (`RUN_E2E=1` para activarlos).
+- Most of the coverage lives in **unit tests**.
+- `tests/api` are HTTP contract **smoke** tests, they don't rewrite all the logic.
+- E2E are **off** by default (`RUN_E2E=1` to enable them).
 
-Por qué: unitarios rápidos y estables; demasiados E2E vuelven el CI frágil.
+Why: unit tests are fast and stable; too many E2E make CI fragile.
 
 ---
 
-## 2. Patrón AAA (Arrange – Act – Assert)
+## 2. AAA pattern (Arrange – Act – Assert)
 
-1. **Arrange** — datos, fixtures, payloads  
-2. **Act** — una acción (service, repo o un request)  
-3. **Assert** — status, valores, excepciones  
+1. **Arrange** — data, fixtures, payloads  
+2. **Act** — one action (service, repo, or a request)  
+3. **Assert** — status, values, exceptions  
 
-Ejemplo:
+Example:
 
 ```python
 def test_create_rejects_foreign_account(db_session):
@@ -50,100 +50,100 @@ def test_create_rejects_foreign_account(db_session):
 
 ---
 
-## 3. Mapa de carpetas
+## 3. Folder map
 
 ```
 tests/
 ├── conftest.py              Fixtures (db_session, client, auth, admin+MFA)
-├── helpers.py               Factories make_*
+├── helpers.py               make_* factories
 ├── core/                    UNIT — security
-├── services/                UNIT — negocio (+ MFA, transfer, reports, seed)
+├── services/                UNIT — business (+ MFA, transfer, reports, seed)
 ├── repositories/            UNIT — queries / ownership
 ├── api/                     INTEGRATION — TestClient + SQLite
 ├── integration/             INTEGRATION — Postgres opt-in
-└── e2e/                     E2E — servidor vivo opt-in
+└── e2e/                     E2E — live server opt-in
 ```
 
 Markers (`pyproject.toml`): `unit` | `integration` | `postgres` | `e2e`.
 
-Cada módulo declara `pytestmark = pytest.mark.<capa>`.
-Los smoke de Postgres llevan también `pytest.mark.postgres` (`RUN_INTEGRATION=1`).
+Each module declares `pytestmark = pytest.mark.<layer>`.
+The Postgres smoke tests also carry `pytest.mark.postgres` (`RUN_INTEGRATION=1`).
 
 ---
 
-## 4. Fixtures importantes
+## 4. Important fixtures
 
-| Fixture | Qué hace |
+| Fixture | What it does |
 |---------|----------|
-| `db_session` | SQLite en memoria; tablas create/drop por test |
-| `client` | `TestClient` con `get_db` → `db_session` |
-| `registered_user` | Usuario vía `POST /auth/register` |
-| `auth_headers` | Bearer tras login |
-| `admin_headers` | Mismo user promovido a **admin con MFA activo** (requisito de catálogo) |
-| `_reset_rate_limiter` | Autouse: limpia el rate limit in-memory entre tests |
+| `db_session` | In-memory SQLite; tables create/drop per test |
+| `client` | `TestClient` with `get_db` → `db_session` |
+| `registered_user` | User via `POST /auth/register` |
+| `auth_headers` | Bearer after login |
+| `admin_headers` | Same user promoted to **admin with active MFA** (catalog requirement) |
+| `_reset_rate_limiter` | Autouse: clears the in-memory rate limit between tests |
 
-Factories en `tests/helpers.py`: `make_user`, `make_account`, `make_category`, `make_sub_category`, `make_transaction`.
+Factories in `tests/helpers.py`: `make_user`, `make_account`, `make_category`, `make_sub_category`, `make_transaction`.
 
-Reglas:
+Rules:
 
-- Unitarios de service **no** dependen de endpoints.
-- Smokes de API **no** duplican todas las ramas del service.
+- Service unit tests do **not** depend on endpoints.
+- API smokes do **not** duplicate all the service branches.
 
 ---
 
-## 5. Qué testear en cada capa
+## 5. What to test in each layer
 
-**UNIT — services (prioridad #1)**
+**UNIT — services (priority #1)**
 
 - Ownership  
-- Coherencia categoría/subcategoría  
-- Saldo (create/update/deactivate/transfer)  
+- Category/subcategory consistency  
+- Balance (create/update/deactivate/transfer)  
 - Soft-delete  
-- MFA challenge / admin sin MFA bloqueado  
-- Reportes (gastos vs transferencias)
+- MFA challenge / admin without MFA blocked  
+- Reports (expenses vs transfers)
 
 **UNIT — repositories**
 
-- Filtros `user_id`, `only_active`, joins Transaction↔Account  
+- `user_id`, `only_active` filters, Transaction↔Account joins  
 
 **UNIT — core**
 
-- bcrypt, JWT, (opcional) firma webhook  
+- bcrypt, JWT, (optional) webhook signature  
 
 **INTEGRATION — api/**
 
-- Status codes del contrato  
-- 401 sin Bearer  
-- Happy-path corto por recurso  
+- Contract status codes  
+- 401 without Bearer  
+- Short happy-path per resource  
 
 **INTEGRATION — integration/** (opt-in)
 
-- Postgres real + `alembic_version`  
+- Real Postgres + `alembic_version`  
 
 **E2E** (opt-in)
 
-- Un camino crítico: health → register → login → account → catálogo → tx → report  
+- One critical path: health → register → login → account → catalog → tx → report  
 
 ---
 
-## 6. Cómo ejecutar
+## 6. How to run
 
-Suite diaria (CI-like):
+Daily suite (CI-like):
 
 ```bash
 source .venv/bin/activate
 pytest -q -m "not e2e"
-# con coverage (como CI):
+# with coverage (like CI):
 pytest -q -m "not e2e" --cov=app --cov-fail-under=70
 ```
 
-Solo unitarios:
+Unit only:
 
 ```bash
 pytest -m unit -q
 ```
 
-Postgres real:
+Real Postgres:
 
 ```bash
 docker compose up db -d
@@ -153,7 +153,7 @@ RUN_INTEGRATION=1 \
   pytest -m postgres -q tests/integration
 ```
 
-E2E (API ya arriba):
+E2E (API already up):
 
 ```bash
 RUN_E2E=1 E2E_BASE_URL=http://localhost:8000 pytest -m e2e -q
@@ -165,7 +165,7 @@ Lint:
 ruff check app tests
 ```
 
-Auditoría de deps:
+Dependency audit:
 
 ```bash
 pip-audit -r requirements.txt -r requirements-dev.txt
@@ -173,35 +173,35 @@ pip-audit -r requirements.txt -r requirements-dev.txt
 
 ---
 
-## 7. Política al agregar código
+## 7. Policy when adding code
 
-1. Unitarios del **service** para la regla nueva.  
-2. Si el SQL no es trivial → unitario de **repository**.  
-3. Como máximo **un smoke** en `tests/api` si el contrato HTTP es nuevo.  
-4. No abras E2E nuevos salvo camino crítico acordado con QA.  
-5. Actualiza el inventario de abajo y [API.md](API.md) / [NEGOCIO.md](NEGOCIO.md) si cambia comportamiento.
+1. **Service** unit tests for the new rule.  
+2. If the SQL is not trivial → **repository** unit test.  
+3. At most **one smoke** in `tests/api` if the HTTP contract is new.  
+4. Don't open new E2E unless it's a critical path agreed with QA.  
+5. Update the inventory below and [API.md](API.md) / [BUSINESS.md](BUSINESS.md) if behavior changes.
 
-Checklist PR:
+PR checklist:
 
-- [ ] `pytest -q -m "not e2e"` en verde  
-- [ ] Nuevas reglas en `tests/services`  
-- [ ] Sin secretos reales en fixtures  
-- [ ] Markers correctos  
-- [ ] Docs alineadas si cambió el contrato  
-
----
-
-## 8. Qué NO hacer
-
-- No uses BD de producción.  
-- No dependas del orden entre archivos.  
-- No tripliques el mismo assert en service + API + E2E.  
-- No desactives markers para “hacer pasar” el CI.  
-- No olvides limpiar rate limit si agregas tests de auth masivos (ya hay autouse).  
+- [ ] `pytest -q -m "not e2e"` green  
+- [ ] New rules in `tests/services`  
+- [ ] No real secrets in fixtures  
+- [ ] Correct markers  
+- [ ] Docs aligned if the contract changed  
 
 ---
 
-## 9. Inventario actual
+## 8. What NOT to do
+
+- Don't use a production DB.  
+- Don't depend on the order between files.  
+- Don't triplicate the same assert in service + API + E2E.  
+- Don't disable markers to “make CI pass”.  
+- Don't forget to clear the rate limit if you add bulk auth tests (there's already an autouse).  
+
+---
+
+## 9. Current inventory
 
 **Unit**
 
@@ -214,7 +214,7 @@ Checklist PR:
 - `tests/services/test_user_service.py`
 - `tests/services/test_report_service.py`
 - `tests/services/test_seed_catalog.py`
-- `tests/services/test_security_controls.py` (MFA, webhooks, admin sin MFA)
+- `tests/services/test_security_controls.py` (MFA, webhooks, admin without MFA)
 - `tests/services/test_counterparty_service.py`
 - `tests/services/test_medio_pago_service.py`
 - `tests/services/test_schema_constraints.py` (`transactions.tipo` length)
@@ -229,7 +229,7 @@ Checklist PR:
 - `tests/api/test_transactions.py`
 - `tests/api/test_counterparties.py`
 - `tests/api/test_medio_pago.py`
-- `tests/integration/test_postgres_smoke.py` (opt-in; incluye check `tipo` ≥ 21)
+- `tests/integration/test_postgres_smoke.py` (opt-in; includes `tipo` ≥ 21 check)
 
 **E2E**
 
@@ -239,23 +239,23 @@ Checklist PR:
 
 1. Ruff  
 2. pip-audit  
-3. Pytest `-m "not e2e"` con coverage ≥ 70%  
+3. Pytest `-m "not e2e"` with coverage ≥ 70%  
 
-### Rate limit al testear auth en masa
+### Rate limit when testing auth in bulk
 
 `RATE_LIMIT_AUTH_MAX` (default 10) / `RATE_LIMIT_AUTH_WINDOW_SECONDS` (60).
-Ráfagas de `/auth/login` → **429**. En probes manuales: espaciar requests o esperar la ventana.
+Bursts of `/auth/login` → **429**. In manual probes: space out requests or wait for the window.
 
-### Dataset demo 100 usuarios (Postgres)
+### Demo dataset 100 users (Postgres)
 
 ```bash
 docker compose up db -d
 ./scripts/migrate.sh
 psql "$DATABASE_URL" -f scripts/data/demo_100_users.sql
-# regenerar: python scripts/generate_demo_100_users_sql.py
+# regenerate: python scripts/generate_demo_100_users_sql.py
 ```
 
 Login: `demo001`…`demo100` / `Password123!`  
-El seed es idempotente para correos `demo%@example.com` y mantiene saldos ≥ 0.
+The seed is idempotent for `demo%@example.com` emails and keeps balances ≥ 0.
 
-Actualiza este inventario cuando agregues módulos relevantes.
+Update this inventory when you add relevant modules.
